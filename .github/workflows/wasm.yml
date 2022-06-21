@@ -75,12 +75,13 @@ jobs:
     clean:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
 
             - uses: actions-rs/toolchain@v1
               with:
                   toolchain: nightly
                   components: rustfmt, clippy
+                  target: wasm32-unknown-unknown
                   override: true
 
             - name: Install alsa
