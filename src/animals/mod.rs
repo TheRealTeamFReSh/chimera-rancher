@@ -53,7 +53,10 @@ fn spawn_pig(position: Vec2, commands: &mut Commands, asset_server: &AssetServer
         })
         .insert(Transform::from_translation(position.extend(0.0)))
         .insert(AnimalComponent {
-            behavior: AnimalBehavior::Idle,
+            behavior: AnimalBehavior::Idle {
+                timer: Timer::from_seconds(2.0, false),
+                base_duration: 2.0,
+            },
             speed: 3.0,
         })
         .insert(RigidBody::Dynamic)
