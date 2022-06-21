@@ -52,7 +52,7 @@ jobs:
 
             # make an embeddable version in /out/
             - name: Wasm bindgen
-              run: wasm-bindgen --out-dir ./out/ --target web ./target/wasm32-unknown-unknown/release/bevy_jam_1.wasm
+              run: wasm-bindgen --out-dir ./out/ --target web ./target/wasm32-unknown-unknown/release/chimera-rancher.wasm
 
             - name: Copy files to dist folder
               run: |
