@@ -6,28 +6,31 @@ use std::time::Duration;
 
 use super::{AnimalComponent, AnimalStats};
 
-const IDLE_DURATION_SPREAD: f32 = 2.0;
 const ROUND_ZERO_RANGE: f32 = 10.0;
 
+// Enum that describes behaviors for animals
 pub enum AnimalBehavior {
     Idle {
         timer: Timer,
         base_duration: f32,
+        duration_spread: f32,
         direction: Vec2,
         is_moving: bool,
     },
 }
 
+// Handles animals behaving according to their current behavior
 pub fn animal_behavior_system(
     time: Res<Time>,
-    mut animal_query: Query<(&mut AnimalComponent, &mut Velocity, &mut Sprite)>,
+    mut animal_query: Query<(&mut AnimalComponent, &mut Velocity, &mut Sprite, &Transform)>,
 ) {
-    for (mut animal, mut vel, mut sprite) in animal_query.iter_mut() {
+    for (mut animal, mut vel, mut sprite, transform) in animal_query.iter_mut() {
         let stats = animal.stats;
         match &mut animal.behavior {
             AnimalBehavior::Idle {
                 timer,
                 base_duration,
+                duration_spread,
                 direction,
                 is_moving,
             } => animal_idle(
@@ -36,6 +39,7 @@ pub fn animal_behavior_system(
                 &time,
                 timer,
                 base_duration,
+                duration_spread,
                 direction,
                 is_moving,
                 stats,
@@ -44,12 +48,14 @@ pub fn animal_behavior_system(
     }
 }
 
+// Handle animal idling behavior
 pub fn animal_idle(
     vel: &mut Velocity,
     sprite: &mut Sprite,
     time: &Time,
     timer: &mut Timer,
     base_duration: &f32,
+    duration_spread: &f32,
     direction: &mut Vec2,
     is_moving: &mut bool,
     stats: AnimalStats,
@@ -58,20 +64,20 @@ pub fn animal_idle(
 
     if timer.just_finished() {
         timer.set_duration(Duration::from_secs_f32(
-            base_duration
-                - rand::thread_rng().gen_range(-IDLE_DURATION_SPREAD..IDLE_DURATION_SPREAD),
+            base_duration - rand::thread_rng().gen_range(-duration_spread..*duration_spread),
         ));
         timer.reset();
 
         let dir: [f32; 2] = UnitCircle.sample(&mut rand::thread_rng());
-        println!("{:?} is from the unit circle.", dir);
 
         direction.x = dir[0];
         direction.y = dir[1];
 
-        sprite.flip_x = direction.x < 0.0;
-
         *is_moving ^= true;
+
+        if *is_moving {
+            sprite.flip_x = direction.x < 0.0;
+        }
     }
 
     if *is_moving {
