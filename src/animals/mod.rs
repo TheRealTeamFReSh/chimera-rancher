@@ -1,4 +1,7 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
+
+use self::behavior::AnimalBehavior;
 
 mod behavior;
 
@@ -48,5 +51,20 @@ fn spawn_pig(position: Vec2, commands: &mut Commands, asset_server: &AssetServer
             texture: asset_server.load("pig.png"),
             ..default()
         })
-        .insert(Transform::from_translation(position.extend(0.0)));
+        .insert(Transform::from_translation(position.extend(0.0)))
+        .insert(AnimalComponent {
+            behavior: AnimalBehavior::Idle {
+                timer: Timer::from_seconds(2.0, false),
+                base_duration: 2.0,
+            },
+            speed: 3.0,
+        })
+        .insert(RigidBody::Dynamic)
+        .insert(Collider::cuboid(25.0, 10.0));
+}
+
+#[derive(Component)]
+pub struct AnimalComponent {
+    behavior: AnimalBehavior,
+    speed: f32,
 }
