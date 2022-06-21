@@ -15,18 +15,23 @@ jobs:
         runs-on: ubuntu-latest
         needs: clean
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
+
+            - uses: actions/cache@v3
+              with:
+                  path: |
+                      ~/.cargo/bin/
+                      ~/.cargo/registry/index/
+                      ~/.cargo/registry/cache/
+                      ~/.cargo/git/db/
+                      target/
+                  key: ${{ runner.os }}-cargo-build-wasm-${{ hashFiles('**/Cargo.toml') }}
 
             - uses: actions-rs/toolchain@v1
               with:
                   toolchain: nightly
                   override: true
-
-            - uses: actions/cache@v2
-              with:
-                  path: |
-                      target
-                  key: ${{ runner.os }}-cargo-check-test-nightly-${{ hashFiles('**/Cargo.lock') }}
+                  target: wasm32-unknown-unknown
 
             # install wasm-bindgen
             - uses: jetli/wasm-bindgen-action@v0.1.0
@@ -42,8 +47,9 @@ jobs:
               run: sudo apt-get update; sudo apt-get install --no-install-recommends libudev-dev
               if: ${{ runner.os == 'Linux' }}
 
-            - name: Install target
-              run: rustup target install wasm32-unknown-unknown
+            # useless with new toolchain
+            # - name: Install target
+            #   run: rustup target install wasm32-unknown-unknown
 
             - name: Build wasm target
               run: cargo build --release --no-default-features --target wasm32-unknown-unknown
