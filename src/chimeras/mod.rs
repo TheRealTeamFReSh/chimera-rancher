@@ -224,23 +224,35 @@ pub fn spawn_chimera(
         ))
         .insert(LockedAxes::ROTATION_LOCKED)
         .with_children(|parent| {
-            parent.spawn_bundle(SpriteBundle {
-                texture: asset_server.load(&head_attributes.texture),
-                sprite: Sprite {
-                    flip_x: matches!(chimera_parts.0, ChimeraPartKind::Tail(_)),
+            parent
+                .spawn_bundle(SpriteBundle {
+                    texture: asset_server.load(&head_attributes.texture),
+                    sprite: Sprite {
+                        flip_x: matches!(chimera_parts.0, ChimeraPartKind::Tail(_)),
+                        ..default()
+                    },
                     ..default()
-                },
-                ..default()
-            });
+                })
+                .insert(Transform::from_xyz(
+                    tail_attributes.collider_size.x - head_attributes.collider_size.x,
+                    0.0,
+                    0.0,
+                ));
 
-            parent.spawn_bundle(SpriteBundle {
-                texture: asset_server.load(&tail_attributes.texture),
-                sprite: Sprite {
-                    flip_x: matches!(chimera_parts.1, ChimeraPartKind::Head(_)),
+            parent
+                .spawn_bundle(SpriteBundle {
+                    texture: asset_server.load(&tail_attributes.texture),
+                    sprite: Sprite {
+                        flip_x: matches!(chimera_parts.1, ChimeraPartKind::Head(_)),
+                        ..default()
+                    },
                     ..default()
-                },
-                ..default()
-            });
+                })
+                .insert(Transform::from_xyz(
+                    tail_attributes.collider_size.x - head_attributes.collider_size.x,
+                    0.0,
+                    0.0,
+                ));
         });
 
     /*
