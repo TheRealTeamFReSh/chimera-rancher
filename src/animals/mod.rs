@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand_distr::{Distribution, UnitCircle};
+use std::collections::HashMap;
 
 use self::behavior::AnimalBehavior;
 
@@ -10,11 +11,100 @@ pub struct AnimalsPlugin;
 
 impl Plugin for AnimalsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_test_system)
+        let mut animal_attr_res = AnimalAttributesResource::default();
+        animal_attr_res.insert(
+            AnimalKind::Pig,
+            AnimalAttributes {
+                speed: 60.0,
+                accel: 1.5,
+                decel: 7.0,
+                collider_size: Vec2::new(25.0, 10.0),
+                texture: "pig.png".to_string(),
+                behavior: AnimalBehavior::Idle {
+                    timer: Timer::from_seconds(2.0, false),
+                    base_duration: 2.5,
+                    duration_spread: 1.0,
+                    direction: Vec2::default(),
+                    is_moving: false,
+                },
+            },
+        );
+        animal_attr_res.insert(
+            AnimalKind::Cow,
+            AnimalAttributes {
+                speed: 50.0,
+                accel: 1.75,
+                decel: 7.0,
+                collider_size: Vec2::new(25.0, 10.0),
+                texture: "cow.png".to_string(),
+                behavior: AnimalBehavior::Idle {
+                    timer: Timer::from_seconds(2.0, false),
+                    base_duration: 3.5,
+                    duration_spread: 0.5,
+                    direction: Vec2::default(),
+                    is_moving: false,
+                },
+            },
+        );
+        animal_attr_res.insert(
+            AnimalKind::Dog,
+            AnimalAttributes {
+                speed: 80.0,
+                accel: 2.2,
+                decel: 7.0,
+                collider_size: Vec2::new(25.0, 10.0),
+                texture: "dog.png".to_string(),
+                behavior: AnimalBehavior::Idle {
+                    timer: Timer::from_seconds(2.0, false),
+                    base_duration: 1.5,
+                    duration_spread: 1.0,
+                    direction: Vec2::default(),
+                    is_moving: false,
+                },
+            },
+        );
+        animal_attr_res.insert(
+            AnimalKind::Chicken,
+            AnimalAttributes {
+                speed: 70.0,
+                accel: 2.0,
+                decel: 7.0,
+                collider_size: Vec2::new(12.0, 10.0),
+                texture: "chicken.png".to_string(),
+                behavior: AnimalBehavior::Idle {
+                    timer: Timer::from_seconds(2.0, false),
+                    base_duration: 1.0,
+                    duration_spread: 0.9,
+                    direction: Vec2::default(),
+                    is_moving: false,
+                },
+            },
+        );
+        animal_attr_res.insert(
+            AnimalKind::Horse,
+            AnimalAttributes {
+                speed: 100.0,
+                accel: 3.0,
+                decel: 7.0,
+                collider_size: Vec2::new(25.0, 10.0),
+                texture: "horse.png".to_string(),
+                behavior: AnimalBehavior::Idle {
+                    timer: Timer::from_seconds(2.0, false),
+                    base_duration: 6.0,
+                    duration_spread: 2.0,
+                    direction: Vec2::default(),
+                    is_moving: false,
+                },
+            },
+        );
+
+        app.insert_resource(animal_attr_res)
+            .add_startup_system(spawn_test_system)
             .add_system(behavior::animal_behavior_system);
     }
 }
 
+#[derive(Hash, PartialEq, Eq)]
 pub enum AnimalKind {
     Pig,
     Cow,
@@ -38,11 +128,27 @@ pub struct AnimalStats {
     decel: f32,
 }
 
+pub struct AnimalAttributes {
+    speed: f32,
+    accel: f32,
+    decel: f32,
+    collider_size: Vec2,
+    texture: String,
+    behavior: AnimalBehavior,
+}
+
+type AnimalAttributesResource = HashMap<AnimalKind, AnimalAttributes>;
+
 // Test function, spawns one of each animal
-fn spawn_test_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_test_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    animal_attr_res: Res<AnimalAttributesResource>,
+) {
     spawn_animal(
         &AnimalKind::Pig,
         Vec2::new(400.0, 50.0),
+        &animal_attr_res,
         &mut commands,
         &asset_server,
     );
@@ -50,6 +156,7 @@ fn spawn_test_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     spawn_animal(
         &AnimalKind::Cow,
         Vec2::new(-50.0, -200.0),
+        &animal_attr_res,
         &mut commands,
         &asset_server,
     );
@@ -57,6 +164,7 @@ fn spawn_test_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     spawn_animal(
         &AnimalKind::Dog,
         Vec2::new(-200.0, 200.0),
+        &animal_attr_res,
         &mut commands,
         &asset_server,
     );
@@ -64,6 +172,7 @@ fn spawn_test_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     spawn_animal(
         &AnimalKind::Horse,
         Vec2::new(0.0, -300.0),
+        &animal_attr_res,
         &mut commands,
         &asset_server,
     );
@@ -71,6 +180,7 @@ fn spawn_test_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     spawn_animal(
         &AnimalKind::Chicken,
         Vec2::new(0.0, 0.0),
+        &animal_attr_res,
         &mut commands,
         &asset_server,
     );
@@ -80,19 +190,12 @@ fn spawn_test_system(mut commands: Commands, asset_server: Res<AssetServer>) {
 pub fn spawn_animal(
     animal_kind: &AnimalKind,
     position: Vec2,
+    animal_attr_res: &AnimalAttributesResource,
     commands: &mut Commands,
     asset_server: &AssetServer,
 ) {
-    match animal_kind {
-        AnimalKind::Pig => spawn_pig(position, commands, asset_server),
-        AnimalKind::Cow => spawn_cow(position, commands, asset_server),
-        AnimalKind::Dog => spawn_dog(position, commands, asset_server),
-        AnimalKind::Horse => spawn_horse(position, commands, asset_server),
-        AnimalKind::Chicken => spawn_chicken(position, commands, asset_server),
-    }
-}
+    let attributes = &animal_attr_res[animal_kind];
 
-fn spawn_pig(position: Vec2, commands: &mut Commands, asset_server: &AssetServer) {
     let mut random_direction = Vec2::new(0.0, 0.0);
     let dir: [f32; 2] = UnitCircle.sample(&mut rand::thread_rng());
     random_direction.x = dir[0];
@@ -100,7 +203,7 @@ fn spawn_pig(position: Vec2, commands: &mut Commands, asset_server: &AssetServer
 
     commands
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("pig.png"),
+            texture: asset_server.load(&attributes.texture),
             ..default()
         })
         .insert(Transform::from_translation(position.extend(0.0)))
@@ -109,160 +212,17 @@ fn spawn_pig(position: Vec2, commands: &mut Commands, asset_server: &AssetServer
             angvel: 0.0,
         })
         .insert(AnimalComponent {
-            behavior: AnimalBehavior::Idle {
-                timer: Timer::from_seconds(2.0, false),
-                base_duration: 2.5,
-                duration_spread: 1.0,
-                direction: random_direction,
-                is_moving: false,
-            },
+            behavior: attributes.behavior.clone(),
             stats: AnimalStats {
-                speed: 60.0,
-                accel: 1.5,
-                decel: 7.0,
+                speed: attributes.speed,
+                accel: attributes.accel,
+                decel: attributes.decel,
             },
         })
         .insert(RigidBody::Dynamic)
-        .insert(Collider::cuboid(25.0, 10.0))
-        .insert(LockedAxes::ROTATION_LOCKED);
-}
-
-fn spawn_cow(position: Vec2, commands: &mut Commands, asset_server: &AssetServer) {
-    let mut random_direction = Vec2::new(0.0, 0.0);
-    let dir: [f32; 2] = UnitCircle.sample(&mut rand::thread_rng());
-    random_direction.x = dir[0];
-    random_direction.y = dir[1];
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("cow.png"),
-            ..default()
-        })
-        .insert(Transform::from_translation(position.extend(0.0)))
-        .insert(Velocity {
-            linvel: Vec2::new(0.0, 0.0),
-            angvel: 0.0,
-        })
-        .insert(AnimalComponent {
-            behavior: AnimalBehavior::Idle {
-                timer: Timer::from_seconds(2.0, false),
-                base_duration: 3.5,
-                duration_spread: 0.5,
-                direction: random_direction,
-                is_moving: false,
-            },
-            stats: AnimalStats {
-                speed: 50.0,
-                accel: 1.75,
-                decel: 7.0,
-            },
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::cuboid(25.0, 10.0))
-        .insert(LockedAxes::ROTATION_LOCKED);
-}
-
-fn spawn_dog(position: Vec2, commands: &mut Commands, asset_server: &AssetServer) {
-    let mut random_direction = Vec2::new(0.0, 0.0);
-    let dir: [f32; 2] = UnitCircle.sample(&mut rand::thread_rng());
-    random_direction.x = dir[0];
-    random_direction.y = dir[1];
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("dog.png"),
-            ..default()
-        })
-        .insert(Transform::from_translation(position.extend(0.0)))
-        .insert(Velocity {
-            linvel: Vec2::new(0.0, 0.0),
-            angvel: 0.0,
-        })
-        .insert(AnimalComponent {
-            behavior: AnimalBehavior::Idle {
-                timer: Timer::from_seconds(2.0, false),
-                base_duration: 1.5,
-                duration_spread: 1.0,
-                direction: random_direction,
-                is_moving: false,
-            },
-            stats: AnimalStats {
-                speed: 80.0,
-                accel: 2.2,
-                decel: 7.0,
-            },
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::cuboid(25.0, 10.0))
-        .insert(LockedAxes::ROTATION_LOCKED);
-}
-
-fn spawn_horse(position: Vec2, commands: &mut Commands, asset_server: &AssetServer) {
-    let mut random_direction = Vec2::new(0.0, 0.0);
-    let dir: [f32; 2] = UnitCircle.sample(&mut rand::thread_rng());
-    random_direction.x = dir[0];
-    random_direction.y = dir[1];
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("horse.png"),
-            ..default()
-        })
-        .insert(Transform::from_translation(position.extend(0.0)))
-        .insert(Velocity {
-            linvel: Vec2::new(0.0, 0.0),
-            angvel: 0.0,
-        })
-        .insert(AnimalComponent {
-            behavior: AnimalBehavior::Idle {
-                timer: Timer::from_seconds(2.0, false),
-                base_duration: 6.0,
-                duration_spread: 2.0,
-                direction: random_direction,
-                is_moving: false,
-            },
-            stats: AnimalStats {
-                speed: 100.0,
-                accel: 3.0,
-                decel: 7.0,
-            },
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::cuboid(25.0, 10.0))
-        .insert(LockedAxes::ROTATION_LOCKED);
-}
-
-fn spawn_chicken(position: Vec2, commands: &mut Commands, asset_server: &AssetServer) {
-    let mut random_direction = Vec2::new(0.0, 0.0);
-    let dir: [f32; 2] = UnitCircle.sample(&mut rand::thread_rng());
-    random_direction.x = dir[0];
-    random_direction.y = dir[1];
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("chicken.png"),
-            ..default()
-        })
-        .insert(Transform::from_translation(position.extend(0.0)))
-        .insert(Velocity {
-            linvel: Vec2::new(0.0, 0.0),
-            angvel: 0.0,
-        })
-        .insert(AnimalComponent {
-            behavior: AnimalBehavior::Idle {
-                timer: Timer::from_seconds(2.0, false),
-                base_duration: 1.0,
-                duration_spread: 0.9,
-                direction: random_direction,
-                is_moving: false,
-            },
-            stats: AnimalStats {
-                speed: 70.0,
-                accel: 2.0,
-                decel: 7.0,
-            },
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::cuboid(12.0, 10.0))
+        .insert(Collider::cuboid(
+            attributes.collider_size.x,
+            attributes.collider_size.y,
+        ))
         .insert(LockedAxes::ROTATION_LOCKED);
 }

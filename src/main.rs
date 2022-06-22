@@ -2,11 +2,13 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 mod animals;
+mod chimeras;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(animals::AnimalsPlugin)
+        .add_plugin(chimeras::ChimerasPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_startup_system(setup_camera)
