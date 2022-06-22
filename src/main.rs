@@ -31,7 +31,7 @@ fn setup_boundaries(mut commands: Commands) {
     commands
         .spawn()
         .insert(Collider::cuboid(500.0, 20.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, -250.0,0.0)));
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, -250.0, 0.0)));
 
     /*Top Edge*/
     commands
@@ -50,5 +50,4 @@ fn setup_boundaries(mut commands: Commands) {
         .spawn()
         .insert(Collider::cuboid(20.0, 1000.0))
         .insert_bundle(TransformBundle::from(Transform::from_xyz(500.0, 0.0, 0.0)));
-    
 }

@@ -31,7 +31,7 @@ fn spawn_player(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let player = Player {
-        speed: 5.5,
+        speed: 4.5,
         acceleration: 1.0,
     };
 
@@ -79,19 +79,23 @@ fn move_player(
     mut query: Query<(&mut Player, &mut Velocity, &mut TextureAtlasSprite)>,
 ) {
     for (player, mut vel, mut sprite) in query.iter_mut() {
+        if !keyboard_input.any_pressed([KeyCode::A, KeyCode::D, KeyCode::W, KeyCode::S]) {
+            vel.linvel.x = 0.0;
+            vel.linvel.y = 0.0;
+        }
+
         if keyboard_input.pressed(KeyCode::A) {
             vel.linvel.x -= player.speed * 1.0;
             sprite.flip_x = true;
         } else if keyboard_input.pressed(KeyCode::D) {
             vel.linvel.x += player.speed * 1.0;
             sprite.flip_x = false;
-        } else if keyboard_input.pressed(KeyCode::W) {
+        }
+
+        if keyboard_input.pressed(KeyCode::W) {
             vel.linvel.y += player.speed * 1.0;
         } else if keyboard_input.pressed(KeyCode::S) {
             vel.linvel.y -= player.speed * 1.0;
-        } else {
-            vel.linvel.x = 0.0;
-            vel.linvel.y = 0.0;
         }
     }
 }
@@ -103,6 +107,7 @@ fn follow_player_camera(
     if let Some(player) = player.iter().next() {
         for mut transform in camera.iter_mut() {
             transform.translation.x = player.translation.x;
+            transform.translation.y = player.translation.y;
         }
     }
 }
