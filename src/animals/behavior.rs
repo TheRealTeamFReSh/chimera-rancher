@@ -9,6 +9,7 @@ use super::{AnimalComponent, AnimalStats};
 const ROUND_ZERO_RANGE: f32 = 10.0;
 
 // Enum that describes behaviors for animals
+#[derive(Clone)]
 pub enum AnimalBehavior {
     Idle {
         timer: Timer,
