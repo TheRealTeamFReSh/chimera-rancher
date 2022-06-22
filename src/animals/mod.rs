@@ -18,7 +18,7 @@ impl Plugin for AnimalsPlugin {
                 speed: 60.0,
                 accel: 1.5,
                 decel: 7.0,
-                collider_size: Vec2::new(25.0, 10.0),
+                collider_size: Vec2::new(24.0, 10.0),
                 texture: "pig.png".to_string(),
                 behavior: AnimalBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
@@ -35,7 +35,7 @@ impl Plugin for AnimalsPlugin {
                 speed: 50.0,
                 accel: 1.75,
                 decel: 7.0,
-                collider_size: Vec2::new(25.0, 10.0),
+                collider_size: Vec2::new(24.0, 10.0),
                 texture: "cow.png".to_string(),
                 behavior: AnimalBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
@@ -52,7 +52,7 @@ impl Plugin for AnimalsPlugin {
                 speed: 80.0,
                 accel: 2.2,
                 decel: 7.0,
-                collider_size: Vec2::new(25.0, 10.0),
+                collider_size: Vec2::new(24.0, 10.0),
                 texture: "dog.png".to_string(),
                 behavior: AnimalBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
@@ -86,7 +86,7 @@ impl Plugin for AnimalsPlugin {
                 speed: 100.0,
                 accel: 3.0,
                 decel: 7.0,
-                collider_size: Vec2::new(25.0, 10.0),
+                collider_size: Vec2::new(24.0, 10.0),
                 texture: "horse.png".to_string(),
                 behavior: AnimalBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
@@ -179,7 +179,7 @@ fn spawn_test_system(
 
     spawn_animal(
         &AnimalKind::Chicken,
-        Vec2::new(0.0, 0.0),
+        Vec2::new(200.0, 75.0),
         &animal_attr_res,
         &mut commands,
         &asset_server,
@@ -206,7 +206,9 @@ pub fn spawn_animal(
             texture: asset_server.load(&attributes.texture),
             ..default()
         })
-        .insert(Transform::from_translation(position.extend(0.0)))
+        .insert_bundle(TransformBundle::from(Transform::from_translation(
+            position.extend(0.0),
+        )))
         .insert(Velocity {
             linvel: Vec2::new(0.0, 0.0),
             angvel: 0.0,
