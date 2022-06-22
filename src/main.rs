@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 mod animals;
+mod camera;
 mod chimeras;
 mod player;
 
@@ -13,14 +14,10 @@ fn main() {
         .add_plugin(animals::AnimalsPlugin)
         .add_plugin(chimeras::ChimerasPlugin)
         .add_plugin(player::PlayerPlugin)
-        .add_startup_system(setup_camera)
+        .add_plugin(camera::CameraPlugin)
         .add_startup_system(setup_physics)
         .add_startup_system(setup_boundaries)
         .run();
-}
-
-fn setup_camera(mut commands: Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
 
 fn setup_physics(mut rapier_config: ResMut<RapierConfiguration>) {

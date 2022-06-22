@@ -25,7 +25,7 @@ pub fn animal_behavior_system(
     time: Res<Time>,
     mut animal_query: Query<(&mut AnimalComponent, &mut Velocity, &mut Sprite, &Transform)>,
 ) {
-    for (mut animal, mut vel, mut sprite, transform) in animal_query.iter_mut() {
+    for (mut animal, mut vel, mut sprite, _transform) in animal_query.iter_mut() {
         let stats = animal.stats;
         match &mut animal.behavior {
             AnimalBehavior::Idle {
