@@ -65,13 +65,22 @@ fn animate_player(
         &mut AnimationTimer,
         &mut TextureAtlasSprite,
         &Handle<TextureAtlas>,
+        &Velocity,
     )>,
 ) {
-    for (mut timer, mut sprite, texture_atlas_handle) in query.iter_mut() {
-        timer.0.tick(time.delta());
-        if timer.0.just_finished() {
-            let texture_atlas = texture_atlases.get(texture_atlas_handle).unwrap();
-            sprite.index = (sprite.index + 1) % texture_atlas.textures.len();
+    for (mut timer, mut sprite, texture_atlas_handle, velocity) in query.iter_mut() {
+        // if the player moves, update the animation
+        if velocity.linvel.length() > 0.05 {
+            timer.0.tick(time.delta());
+            if timer.0.just_finished() {
+                let texture_atlas = texture_atlases.get(texture_atlas_handle).unwrap();
+                sprite.index = (sprite.index + 1) % texture_atlas.textures.len();
+            }
+        } else {
+            // else set it to the first frame (better will be to set it to the idle
+            // animation)
+            timer.0.reset();
+            sprite.index = 0;
         }
     }
 }
