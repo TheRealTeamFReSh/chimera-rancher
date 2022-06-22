@@ -16,7 +16,8 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(spawn_player)
             .add_system(animate_player)
-            .add_system(move_player);
+            .add_system(move_player)
+            .add_system(follow_player_camera);
     }
 }
 
@@ -24,14 +25,13 @@ fn spawn_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    rapier_config: Res<RapierConfiguration>,
 ) {
     let texture_handle = asset_server.load("mage.png");
     let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(77.0, 50.0), 8, 1);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let player = Player {
-        speed: 5.0,
+        speed: 5.5,
         acceleration: 1.0,
     };
 
@@ -48,7 +48,7 @@ fn spawn_player(
             linvel: Vec2::new(0.0, 0.0),
             angvel: 0.0,
         })
-        .insert(Transform::from_translation(Vec3::new(0.0, 12.0, 100.0)))
+        .insert(Transform::from_translation(Vec3::new(0.0, 50.0, 100.0)))
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(25.0, 10.0))
         .insert(LockedAxes::ROTATION_LOCKED)
@@ -76,13 +76,15 @@ fn animate_player(
 
 fn move_player(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Player, &mut Velocity)>,
+    mut query: Query<(&mut Player, &mut Velocity, &mut TextureAtlasSprite)>,
 ) {
-    for (player, mut vel) in query.iter_mut() {
+    for (player, mut vel, mut sprite) in query.iter_mut() {
         if keyboard_input.pressed(KeyCode::A) {
             vel.linvel.x -= player.speed * 1.0;
+            sprite.flip_x = true;
         } else if keyboard_input.pressed(KeyCode::D) {
             vel.linvel.x += player.speed * 1.0;
+            sprite.flip_x = false;
         } else if keyboard_input.pressed(KeyCode::W) {
             vel.linvel.y += player.speed * 1.0;
         } else if keyboard_input.pressed(KeyCode::S) {
@@ -90,6 +92,17 @@ fn move_player(
         } else {
             vel.linvel.x = 0.0;
             vel.linvel.y = 0.0;
+        }
+    }
+}
+
+fn follow_player_camera(
+    player: Query<&Transform, (With<Player>, Without<Camera>)>,
+    mut camera: Query<&mut Transform, (With<Camera>, Without<Player>)>,
+) {
+    if let Some(player) = player.iter().next() {
+        for mut transform in camera.iter_mut() {
+            transform.translation.x = player.translation.x;
         }
     }
 }
