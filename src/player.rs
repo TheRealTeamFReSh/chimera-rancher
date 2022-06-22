@@ -37,14 +37,13 @@ fn spawn_player(
 
     commands
         .spawn_bundle(SpriteSheetBundle {
-                    texture_atlas: texture_atlas_handle,
-                    transform: Transform {
-                        translation: Vec3::new(0.0, 12.0, 100.0),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }
-            )
+            texture_atlas: texture_atlas_handle,
+            transform: Transform {
+                translation: Vec3::new(0.0, 12.0, 100.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
         .insert(Velocity {
             linvel: Vec2::new(0.0, 0.0),
             angvel: 0.0,
