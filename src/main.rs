@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 mod animals;
+mod player;
 
 fn main() {
     App::new()
@@ -9,6 +10,7 @@ fn main() {
         .add_plugin(animals::AnimalsPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(player::PlayerPlugin)
         .add_startup_system(setup_camera)
         .add_startup_system(setup_physics)
         .run();
