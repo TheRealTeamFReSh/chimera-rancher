@@ -4,7 +4,7 @@ use rand::Rng;
 use rand_distr::{Distribution, UnitCircle};
 use std::time::Duration;
 
-use super::{AnimalComponent, AnimalStats};
+use super::{AnimalComponent, AnimalSprite, AnimalStats};
 
 const ROUND_ZERO_RANGE: f32 = 10.0;
 
@@ -23,28 +23,31 @@ pub enum AnimalBehavior {
 // Handles animals behaving according to their current behavior
 pub fn animal_behavior_system(
     time: Res<Time>,
-    mut animal_query: Query<(&mut AnimalComponent, &mut Velocity, &mut Sprite, &Transform)>,
+    mut animal_query: Query<(&mut AnimalComponent, &mut Velocity, &Transform)>,
+    mut sprite_query: Query<&mut Sprite, With<AnimalSprite>>,
 ) {
-    for (mut animal, mut vel, mut sprite, _transform) in animal_query.iter_mut() {
-        let stats = animal.stats;
-        match &mut animal.behavior {
-            AnimalBehavior::Idle {
-                timer,
-                base_duration,
-                duration_spread,
-                direction,
-                is_moving,
-            } => animal_idle(
-                &mut vel,
-                &mut sprite,
-                &time,
-                timer,
-                base_duration,
-                duration_spread,
-                direction,
-                is_moving,
-                stats,
-            ),
+    for (mut animal, mut vel, _transform) in animal_query.iter_mut() {
+        for mut sprite in sprite_query.iter_mut() {
+            let stats = animal.stats;
+            match &mut animal.behavior {
+                AnimalBehavior::Idle {
+                    timer,
+                    base_duration,
+                    duration_spread,
+                    direction,
+                    is_moving,
+                } => animal_idle(
+                    &mut vel,
+                    &mut sprite,
+                    &time,
+                    timer,
+                    base_duration,
+                    duration_spread,
+                    direction,
+                    is_moving,
+                    stats,
+                ),
+            }
         }
     }
 }
