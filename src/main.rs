@@ -1,11 +1,13 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bevy_tweening::TweeningPlugin;
 
 mod animals;
 mod behaviors;
 mod camera;
 mod chimeras;
 mod player;
+mod stats_window;
 
 fn main() {
     App::new()
@@ -16,6 +18,8 @@ fn main() {
         .add_plugin(chimeras::ChimerasPlugin)
         .add_plugin(player::PlayerPlugin)
         .add_plugin(camera::CameraPlugin)
+        .add_plugin(stats_window::StatsWindowPlugin)
+        .add_plugin(TweeningPlugin)
         .add_startup_system(setup_physics)
         .add_startup_system(setup_boundaries)
         .add_startup_system(setup_areas)

@@ -25,6 +25,13 @@ fn setup_camera(mut commands: Commands) {
             smooth_speed: 0.1,
             target_to_mouse_percent: 0.1,
         });
+
+    // let window = windows.get_primary().unwrap();
+    // commands.spawn_bundle(UiCameraBundle {
+    //     transform: Transform::from_xyz(0.0, -window.height() / 2., 1.0),
+    //     ..default()
+    // });
+    commands.spawn_bundle(UiCameraBundle::default());
 }
 
 // the camera movement system grabs the position between the player

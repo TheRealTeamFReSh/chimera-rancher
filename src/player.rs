@@ -113,22 +113,31 @@ fn move_player(
     mut query: Query<(&mut Player, &mut Velocity, &mut TextureAtlasSprite)>,
 ) {
     for (player, mut vel, mut sprite) in query.iter_mut() {
-        if !keyboard_input.any_pressed([KeyCode::A, KeyCode::D, KeyCode::W, KeyCode::S]) {
+        if !keyboard_input.any_pressed([
+            KeyCode::A,
+            KeyCode::D,
+            KeyCode::W,
+            KeyCode::S,
+            KeyCode::Up,
+            KeyCode::Down,
+            KeyCode::Left,
+            KeyCode::Right,
+        ]) {
             vel.linvel.x = 0.0;
             vel.linvel.y = 0.0;
         }
 
-        if keyboard_input.pressed(KeyCode::A) {
+        if keyboard_input.pressed(KeyCode::A) || keyboard_input.pressed(KeyCode::Left) {
             vel.linvel.x -= player.speed * 1.0;
             sprite.flip_x = true;
-        } else if keyboard_input.pressed(KeyCode::D) {
+        } else if keyboard_input.pressed(KeyCode::D) || keyboard_input.pressed(KeyCode::Right) {
             vel.linvel.x += player.speed * 1.0;
             sprite.flip_x = false;
         }
 
-        if keyboard_input.pressed(KeyCode::W) {
+        if keyboard_input.pressed(KeyCode::W) || keyboard_input.pressed(KeyCode::Up) {
             vel.linvel.y += player.speed * 1.0;
-        } else if keyboard_input.pressed(KeyCode::S) {
+        } else if keyboard_input.pressed(KeyCode::S) || keyboard_input.pressed(KeyCode::Down) {
             vel.linvel.y -= player.speed * 1.0;
         }
     }

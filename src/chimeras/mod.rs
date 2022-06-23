@@ -12,7 +12,7 @@ mod chimera_part;
 #[derive(Component)]
 pub struct ChimeraComponent {
     behavior: UnitBehavior,
-    stats: ChimeraStats,
+    pub stats: ChimeraStats,
 }
 
 #[derive(Debug, Clone, Copy)]
