@@ -187,8 +187,8 @@ fn capture_animal(
                     player.inventory.chimera_parts.push(chimera_attr_tail);
 
                     // print the attributes from the parts
-                    println!("capturing {:?}", animal.stats);
-                    println!("inventory {:?}", player.inventory);
+                    //println!("capturing {:?}", animal.stats);
+                    //println!("inventory {:?}", player.inventory);
 
                     // despawn the animal
                     commands.entity(animal_entity).despawn_recursive();

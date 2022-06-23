@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::prelude::SliceRandom;
+use rand::Rng;
 
 use self::behavior::chimera_behavior_system;
 pub use self::chimera_part::ChimeraPartKind;
-use crate::{behaviors::UnitBehavior, player::Player};
+use crate::{animations::BobbingAnim, behaviors::UnitBehavior, player::Player};
 
 mod behavior;
 mod chimera_part;
@@ -154,6 +155,8 @@ pub fn spawn_chimera(
         ))
         .insert(LockedAxes::ROTATION_LOCKED)
         .with_children(|parent| {
+            let bobbing_anim_val = rand::thread_rng().gen::<f32>() * 32.0;
+
             parent
                 .spawn_bundle(SpriteBundle {
                     texture: asset_server.load(&head_attributes.texture),
@@ -164,11 +167,9 @@ pub fn spawn_chimera(
                     ..default()
                 })
                 .insert(ChimeraSprite)
-                .insert(Transform::from_xyz(
-                    tail_attributes.collider_size.x - head_attributes.collider_size.x,
-                    0.0,
-                    0.0,
-                ));
+                .insert(BobbingAnim {
+                    anim: bobbing_anim_val,
+                });
 
             parent
                 .spawn_bundle(SpriteBundle {
@@ -180,10 +181,8 @@ pub fn spawn_chimera(
                     ..default()
                 })
                 .insert(ChimeraSprite)
-                .insert(Transform::from_xyz(
-                    tail_attributes.collider_size.x - head_attributes.collider_size.x,
-                    0.0,
-                    0.0,
-                ));
+                .insert(BobbingAnim {
+                    anim: bobbing_anim_val,
+                });
         });
 }

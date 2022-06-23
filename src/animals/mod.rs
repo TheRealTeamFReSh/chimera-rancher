@@ -4,12 +4,11 @@ use rand::Rng;
 use rand_distr::{Distribution, UnitCircle};
 use std::collections::HashMap;
 
-use self::bob_anim::BobbingAnim;
+use crate::animations::BobbingAnim;
 
 use crate::behaviors::UnitBehavior;
 
 mod behavior;
-mod bob_anim;
 
 const STATS_DEVIATION: f32 = 0.5;
 
@@ -24,7 +23,7 @@ impl Plugin for AnimalsPlugin {
                 speed: 60.0,
                 accel: 1.5,
                 decel: 6.0,
-                collider_size: Vec2::new(24.0, 10.0),
+                collider_size: Vec2::new(20.0, 10.0),
                 texture: "pig.png".to_string(),
                 head_texture: "pighead.png".to_string(),
                 tail_texture: "pigtail.png".to_string(),
@@ -43,7 +42,7 @@ impl Plugin for AnimalsPlugin {
                 speed: 50.0,
                 accel: 1.75,
                 decel: 6.0,
-                collider_size: Vec2::new(24.0, 10.0),
+                collider_size: Vec2::new(20.0, 10.0),
                 texture: "cow.png".to_string(),
                 head_texture: "cowhead.png".to_string(),
                 tail_texture: "cowtail.png".to_string(),
@@ -62,7 +61,7 @@ impl Plugin for AnimalsPlugin {
                 speed: 80.0,
                 accel: 2.2,
                 decel: 6.0,
-                collider_size: Vec2::new(24.0, 10.0),
+                collider_size: Vec2::new(20.0, 10.0),
                 texture: "dog.png".to_string(),
                 head_texture: "doghead.png".to_string(),
                 tail_texture: "dogtail.png".to_string(),
@@ -81,7 +80,7 @@ impl Plugin for AnimalsPlugin {
                 speed: 70.0,
                 accel: 2.0,
                 decel: 6.0,
-                collider_size: Vec2::new(12.0, 10.0),
+                collider_size: Vec2::new(20.0, 10.0),
                 texture: "chicken.png".to_string(),
                 head_texture: "chickenhead.png".to_string(),
                 tail_texture: "chickentail.png".to_string(),
@@ -100,7 +99,7 @@ impl Plugin for AnimalsPlugin {
                 speed: 100.0,
                 accel: 3.0,
                 decel: 6.0,
-                collider_size: Vec2::new(24.0, 10.0),
+                collider_size: Vec2::new(20.0, 10.0),
                 texture: "horse.png".to_string(),
                 head_texture: "horsehead.png".to_string(),
                 tail_texture: "horsetail.png".to_string(),
@@ -116,8 +115,7 @@ impl Plugin for AnimalsPlugin {
 
         app.insert_resource(animal_attr_res)
             .add_startup_system(spawn_test_system)
-            .add_system(behavior::animal_behavior_system)
-            .add_system(bob_anim::bob_animation);
+            .add_system(behavior::animal_behavior_system);
     }
 }
 
