@@ -1,11 +1,13 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use rand::Rng;
 use rand_distr::{Distribution, UnitCircle};
 use std::collections::HashMap;
 
-use self::behavior::AnimalBehavior;
+use self::{behavior::AnimalBehavior, bob_anim::BobbingAnim};
 
 mod behavior;
+mod bob_anim;
 
 pub struct AnimalsPlugin;
 
@@ -100,7 +102,8 @@ impl Plugin for AnimalsPlugin {
 
         app.insert_resource(animal_attr_res)
             .add_startup_system(spawn_test_system)
-            .add_system(behavior::animal_behavior_system);
+            .add_system(behavior::animal_behavior_system)
+            .add_system(bob_anim::bob_animation);
     }
 }
 
@@ -119,6 +122,9 @@ pub struct AnimalComponent {
     behavior: AnimalBehavior,
     stats: AnimalStats,
 }
+
+#[derive(Component)]
+pub struct AnimalSprite;
 
 // Stores stats for animals
 #[derive(Clone, Copy)]
@@ -202,11 +208,7 @@ pub fn spawn_animal(
     random_direction.y = dir[1];
 
     commands
-        .spawn_bundle(SpriteBundle {
-            texture: asset_server.load(&attributes.texture),
-            ..default()
-        })
-        .insert_bundle(TransformBundle::from(Transform::from_translation(
+        .spawn_bundle(TransformBundle::from(Transform::from_translation(
             position.extend(0.0),
         )))
         .insert(Velocity {
@@ -226,5 +228,16 @@ pub fn spawn_animal(
             attributes.collider_size.x,
             attributes.collider_size.y,
         ))
-        .insert(LockedAxes::ROTATION_LOCKED);
+        .insert(LockedAxes::ROTATION_LOCKED)
+        .with_children(|parent| {
+            parent
+                .spawn_bundle(SpriteBundle {
+                    texture: asset_server.load(&attributes.texture),
+                    ..default()
+                })
+                .insert(AnimalSprite)
+                .insert(BobbingAnim {
+                    anim: rand::thread_rng().gen::<f32>() * 32.0,
+                });
+        });
 }

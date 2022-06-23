@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+use crate::camera::CameraTarget;
+
 #[derive(Debug, Component)]
 pub struct Player {
     pub speed: f32,
@@ -16,8 +18,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(spawn_player)
             .add_system(animate_player)
-            .add_system(move_player)
-            .add_system(follow_player_camera);
+            .add_system(move_player);
     }
 }
 
@@ -53,7 +54,8 @@ fn spawn_player(
         .insert(Collider::cuboid(25.0, 10.0))
         .insert(LockedAxes::ROTATION_LOCKED)
         .insert(player)
-        .insert(AnimationTimer(Timer::from_seconds(0.1, true)));
+        .insert(AnimationTimer(Timer::from_seconds(0.1, true)))
+        .insert(CameraTarget);
 }
 
 fn animate_player(
@@ -63,13 +65,22 @@ fn animate_player(
         &mut AnimationTimer,
         &mut TextureAtlasSprite,
         &Handle<TextureAtlas>,
+        &Velocity,
     )>,
 ) {
-    for (mut timer, mut sprite, texture_atlas_handle) in query.iter_mut() {
-        timer.0.tick(time.delta());
-        if timer.0.just_finished() {
-            let texture_atlas = texture_atlases.get(texture_atlas_handle).unwrap();
-            sprite.index = (sprite.index + 1) % texture_atlas.textures.len();
+    for (mut timer, mut sprite, texture_atlas_handle, velocity) in query.iter_mut() {
+        // if the player moves, update the animation
+        if velocity.linvel.length() > 0.05 {
+            timer.0.tick(time.delta());
+            if timer.0.just_finished() {
+                let texture_atlas = texture_atlases.get(texture_atlas_handle).unwrap();
+                sprite.index = (sprite.index + 1) % texture_atlas.textures.len();
+            }
+        } else {
+            // else set it to the first frame (better will be to set it to the idle
+            // animation)
+            timer.0.reset();
+            sprite.index = 0;
         }
     }
 }
@@ -96,18 +107,6 @@ fn move_player(
             vel.linvel.y += player.speed * 1.0;
         } else if keyboard_input.pressed(KeyCode::S) {
             vel.linvel.y -= player.speed * 1.0;
-        }
-    }
-}
-
-fn follow_player_camera(
-    player: Query<&Transform, (With<Player>, Without<Camera>)>,
-    mut camera: Query<&mut Transform, (With<Camera>, Without<Player>)>,
-) {
-    if let Some(player) = player.iter().next() {
-        for mut transform in camera.iter_mut() {
-            transform.translation.x = player.translation.x;
-            transform.translation.y = player.translation.y;
         }
     }
 }

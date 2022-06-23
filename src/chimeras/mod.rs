@@ -2,16 +2,18 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::collections::HashMap;
 
-use self::chimera_part::{ChimeraPartComponent, ChimeraPartKind};
+use self::chimera_part::ChimeraPartKind;
 use crate::animals::AnimalKind;
 
 mod chimera_part;
 
+#[allow(dead_code)]
 #[derive(Component)]
 pub struct ChimeraComponent {
     stats: ChimeraStats,
 }
 
+#[allow(dead_code)]
 pub struct ChimeraStats {
     speed: f32,
     accel: f32,
