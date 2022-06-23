@@ -4,7 +4,9 @@ use rand::Rng;
 use rand_distr::{Distribution, UnitCircle};
 use std::collections::HashMap;
 
-use self::{behavior::AnimalBehavior, bob_anim::BobbingAnim};
+use self::bob_anim::BobbingAnim;
+
+use crate::behaviors::UnitBehavior;
 
 mod behavior;
 mod bob_anim;
@@ -26,7 +28,7 @@ impl Plugin for AnimalsPlugin {
                 texture: "pig.png".to_string(),
                 head_texture: "pighead.png".to_string(),
                 tail_texture: "pigtail.png".to_string(),
-                behavior: AnimalBehavior::Idle {
+                behavior: UnitBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
                     base_duration: 2.5,
                     duration_spread: 1.0,
@@ -45,7 +47,7 @@ impl Plugin for AnimalsPlugin {
                 texture: "cow.png".to_string(),
                 head_texture: "cowhead.png".to_string(),
                 tail_texture: "cowtail.png".to_string(),
-                behavior: AnimalBehavior::Idle {
+                behavior: UnitBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
                     base_duration: 3.5,
                     duration_spread: 0.5,
@@ -64,7 +66,7 @@ impl Plugin for AnimalsPlugin {
                 texture: "dog.png".to_string(),
                 head_texture: "doghead.png".to_string(),
                 tail_texture: "dogtail.png".to_string(),
-                behavior: AnimalBehavior::Idle {
+                behavior: UnitBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
                     base_duration: 1.5,
                     duration_spread: 1.0,
@@ -83,7 +85,7 @@ impl Plugin for AnimalsPlugin {
                 texture: "chicken.png".to_string(),
                 head_texture: "chickenhead.png".to_string(),
                 tail_texture: "chickentail.png".to_string(),
-                behavior: AnimalBehavior::Idle {
+                behavior: UnitBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
                     base_duration: 1.0,
                     duration_spread: 0.9,
@@ -102,7 +104,7 @@ impl Plugin for AnimalsPlugin {
                 texture: "horse.png".to_string(),
                 head_texture: "horsehead.png".to_string(),
                 tail_texture: "horsetail.png".to_string(),
-                behavior: AnimalBehavior::Idle {
+                behavior: UnitBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
                     base_duration: 6.0,
                     duration_spread: 2.0,
@@ -131,7 +133,7 @@ pub enum AnimalKind {
 // Core component of animal
 #[derive(Component)]
 pub struct AnimalComponent {
-    pub behavior: AnimalBehavior,
+    pub behavior: UnitBehavior,
     pub stats: AnimalStats,
 }
 
@@ -155,7 +157,7 @@ pub struct AnimalAttributes {
     pub texture: String,
     pub head_texture: String,
     pub tail_texture: String,
-    pub behavior: AnimalBehavior,
+    pub behavior: UnitBehavior,
 }
 
 pub type AnimalAttributesResource = HashMap<AnimalKind, AnimalAttributes>;

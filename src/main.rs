@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 mod animals;
+mod behaviors;
 mod camera;
 mod chimeras;
 mod player;

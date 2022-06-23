@@ -2,22 +2,24 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::prelude::SliceRandom;
 
+use self::behavior::chimera_behavior_system;
 pub use self::chimera_part::ChimeraPartKind;
-use crate::player::Player;
+use crate::{behaviors::UnitBehavior, player::Player};
 
+mod behavior;
 mod chimera_part;
 
-#[allow(dead_code)]
 #[derive(Component)]
 pub struct ChimeraComponent {
+    behavior: UnitBehavior,
     stats: ChimeraStats,
 }
 
-#[allow(dead_code)]
+#[derive(Debug, Clone, Copy)]
 pub struct ChimeraStats {
-    speed: f32,
-    accel: f32,
-    decel: f32,
+    pub speed: f32,
+    pub accel: f32,
+    pub decel: f32,
 }
 
 // used for passing data from animals to chimeras
@@ -31,11 +33,15 @@ pub struct ChimeraPartAttributes {
     pub kind: ChimeraPartKind,
 }
 
+#[derive(Component)]
+pub struct ChimeraSprite;
+
 pub struct ChimerasPlugin;
 
 impl Plugin for ChimerasPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(test_spawn_chimera_system);
+        app.add_system(test_spawn_chimera_system)
+            .add_system(chimera_behavior_system);
     }
 }
 
@@ -128,6 +134,13 @@ pub fn spawn_chimera(
             angvel: 0.0,
         })
         .insert(ChimeraComponent {
+            behavior: UnitBehavior::Idle {
+                timer: Timer::from_seconds(2.0, false),
+                base_duration: 2.5,
+                duration_spread: 1.0,
+                direction: Vec2::default(),
+                is_moving: false,
+            },
             stats: ChimeraStats {
                 speed: head_attributes.speed + tail_attributes.speed,
                 accel: head_attributes.accel + tail_attributes.accel,
@@ -150,6 +163,7 @@ pub fn spawn_chimera(
                     },
                     ..default()
                 })
+                .insert(ChimeraSprite)
                 .insert(Transform::from_xyz(
                     tail_attributes.collider_size.x - head_attributes.collider_size.x,
                     0.0,
@@ -165,6 +179,7 @@ pub fn spawn_chimera(
                     },
                     ..default()
                 })
+                .insert(ChimeraSprite)
                 .insert(Transform::from_xyz(
                     tail_attributes.collider_size.x - head_attributes.collider_size.x,
                     0.0,
