@@ -23,30 +23,30 @@ fn main() {
 fn setup_physics(mut rapier_config: ResMut<RapierConfiguration>) {
     rapier_config.gravity = [0.0, 0.0].into();
 }
-
+//FIGURE OUT WHY ITS NOT COMPLETELY EVEN LATER
 //spawning map boundaries
 fn setup_boundaries(mut commands: Commands) {
     /*Bottom Edge*/
     commands
         .spawn()
-        .insert(Collider::cuboid(500.0, 20.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, -250.0, 0.0)));
+        .insert(Collider::cuboid(2000.0, 20.0))
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, -1000.0, 0.0)));
 
     /*Top Edge*/
     commands
         .spawn()
-        .insert(Collider::cuboid(500.0, 20.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 250.0, 0.0)));
+        .insert(Collider::cuboid(2000.0, 20.0))
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 1000.0, 0.0)));
 
     /*Left Edge*/
     commands
         .spawn()
-        .insert(Collider::cuboid(20.0, 1000.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(-500.0, 0.0, 0.0)));
+        .insert(Collider::cuboid(20.0, 2000.0))
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(-1000.0, 0.0, 0.0)));
 
     /*Right Edge*/
     commands
         .spawn()
         .insert(Collider::cuboid(20.0, 1000.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(500.0, 0.0, 0.0)));
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(1000.0, 0.0, 0.0)));
 }

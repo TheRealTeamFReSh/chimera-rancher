@@ -21,8 +21,8 @@ opt-level = 3
 [profile.dev]
 opt-level = 1
 
-[features]
-default = ["bevy/dynamic"] # to make the wasm github action work with the --no-default-feature flag
+#[features]
+#default = ["bevy/dynamic"] # to make the wasm github action work with the --no-default-feature flag
 
 # Enabling bevylint
 [workspace.metadata.dylint]
