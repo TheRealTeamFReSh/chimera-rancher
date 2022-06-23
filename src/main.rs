@@ -32,7 +32,9 @@ fn setup_boundaries(mut commands: Commands) {
     commands
         .spawn()
         .insert(Collider::cuboid(1000.0, 20.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, -1500.0, 0.0)));
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(
+            0.0, -1500.0, 0.0,
+        )));
 
     /*Top Edge*/
     commands
@@ -41,41 +43,44 @@ fn setup_boundaries(mut commands: Commands) {
         .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 1500.0, 0.0)));
 
     /*Left Edge*/
-    commands.spawn()
+    commands
+        .spawn()
         .insert(Collider::cuboid(20.0, 1500.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(-1000.0, 0.0, 0.0)));
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(
+            -1000.0, 0.0, 0.0,
+        )));
 
     /*Right Edge*/
-    commands.spawn()
+    commands
+        .spawn()
         .insert(Collider::cuboid(20.0, 1500.0))
         .insert_bundle(TransformBundle::from(Transform::from_xyz(1000.0, 0.0, 0.0)));
 
     //Right river
-    commands.spawn()
+    commands
+        .spawn()
         .insert(Collider::cuboid(450.0, 200.0))
         .insert_bundle(TransformBundle::from(Transform::from_xyz(530.0, 0.0, 0.0)));
 
     //Left river
-    commands.spawn()
+    commands
+        .spawn()
         .insert(Collider::cuboid(450.0, 200.0))
         .insert_bundle(TransformBundle::from(Transform::from_xyz(-530.0, 0.0, 0.0)));
 }
 
 fn setup_areas(mut commands: Commands) {
     //Human area
-    commands.spawn()
-       .insert(Collider::cuboid(980.0, 640.0))
-       .insert(Sensor(true))
-       .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 840.0, 0.0)));
+    commands
+        .spawn()
+        .insert(Collider::cuboid(980.0, 640.0))
+        .insert(Sensor(true))
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 840.0, 0.0)));
 
     //Evil area
-    commands.spawn()
+    commands
+        .spawn()
         .insert(Collider::cuboid(980.0, 640.0))
         .insert(Sensor(true))
         .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, -840.0, 0.0)));
 }
-
-
-
-
-

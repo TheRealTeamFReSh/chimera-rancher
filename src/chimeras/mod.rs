@@ -112,7 +112,7 @@ pub fn spawn_chimera(
     asset_server: &AssetServer,
 ) {
     let mut head_attributes = chimera_parts.0.clone();
-    let mut tail_attributes = chimera_parts.1.clone();
+    let mut tail_attributes = chimera_parts.1;
 
     // swap head and tail if they would otherwise create a backwards chimera
     if matches!(head_attributes.kind, ChimeraPartKind::Tail(_))

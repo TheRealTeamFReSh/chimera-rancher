@@ -245,7 +245,7 @@ pub fn spawn_animal(
                 decel: rand::thread_rng().gen_range(
                     attributes.decel * STATS_DEVIATION..attributes.decel * (1.0 + STATS_DEVIATION),
                 ),
-                kind: animal_kind.clone(),
+                kind: *animal_kind,
             },
         })
         .insert(RigidBody::Dynamic)
