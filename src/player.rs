@@ -18,7 +18,6 @@ pub const TAIL_DECEL_PERCENT: f32 = 0.65;
 pub struct Player {
     pub speed: f32,
     pub acceleration: f32,
-    pub friction: f32,
     pub capture_distance: f32,
     pub inventory: PlayerInventory,
 }
@@ -52,9 +51,8 @@ fn spawn_player(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let player = Player {
-        speed: 300.,
-        acceleration: 0.1,
-        friction: 0.2,
+        speed: 4.5,
+        acceleration: 1.0,
         capture_distance: 200.0,
         inventory: PlayerInventory {
             chimera_parts: Vec::new(),
@@ -95,7 +93,7 @@ fn animate_player(
 ) {
     for (mut timer, mut sprite, texture_atlas_handle, velocity) in query.iter_mut() {
         // if the player moves, update the animation
-        if velocity.linvel.length() > 20. {
+        if velocity.linvel.length() > 0.05 {
             timer.0.tick(time.delta());
             if timer.0.just_finished() {
                 let texture_atlas = texture_atlases.get(texture_atlas_handle).unwrap();
@@ -115,31 +113,32 @@ fn move_player(
     mut query: Query<(&mut Player, &mut Velocity, &mut TextureAtlasSprite)>,
 ) {
     for (player, mut vel, mut sprite) in query.iter_mut() {
-        let mut input_direction = Vec2::ZERO;
+        if !keyboard_input.any_pressed([
+            KeyCode::A,
+            KeyCode::D,
+            KeyCode::W,
+            KeyCode::S,
+            KeyCode::Up,
+            KeyCode::Down,
+            KeyCode::Left,
+            KeyCode::Right,
+        ]) {
+            vel.linvel.x = 0.0;
+            vel.linvel.y = 0.0;
+        }
 
         if keyboard_input.pressed(KeyCode::A) || keyboard_input.pressed(KeyCode::Left) {
-            input_direction.x -= 1.0;
-        }
-        if keyboard_input.pressed(KeyCode::D) || keyboard_input.pressed(KeyCode::Right) {
-            input_direction.x += 1.0;
+            vel.linvel.x -= player.speed * 1.0;
+            sprite.flip_x = true;
+        } else if keyboard_input.pressed(KeyCode::D) || keyboard_input.pressed(KeyCode::Right) {
+            vel.linvel.x += player.speed * 1.0;
+            sprite.flip_x = false;
         }
 
         if keyboard_input.pressed(KeyCode::W) || keyboard_input.pressed(KeyCode::Up) {
-            input_direction.y += 1.0;
+            vel.linvel.y += player.speed * 1.0;
         } else if keyboard_input.pressed(KeyCode::S) || keyboard_input.pressed(KeyCode::Down) {
-            input_direction.y -= 1.0;
-        }
-
-        // if the player didn't move, use friction
-        if input_direction == Vec2::ZERO {
-            vel.linvel = Vec2::lerp(vel.linvel, Vec2::ZERO, player.friction);
-        } else {
-            // normalize in order to have a maximum speed of 1 (dir.length == 1)
-            let dir_vel = input_direction.normalize() * player.speed;
-            vel.linvel = Vec2::lerp(vel.linvel, dir_vel, player.acceleration);
-
-            // flip sprite depending on the direction
-            sprite.flip_x = dir_vel.x < 0.0;
+            vel.linvel.y -= player.speed * 1.0;
         }
     }
 }

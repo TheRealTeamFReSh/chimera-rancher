@@ -66,8 +66,6 @@ pub fn idle_behavior(
         ));
         timer.reset();
 
-        let old_dir = direction.x;
-
         let dir: [f32; 2] = UnitCircle.sample(&mut rand::thread_rng());
 
         direction.x = dir[0];
