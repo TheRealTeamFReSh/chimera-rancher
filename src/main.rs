@@ -29,24 +29,27 @@ fn setup_boundaries(mut commands: Commands) {
     /*Bottom Edge*/
     commands
         .spawn()
-        .insert(Collider::cuboid(2000.0, 20.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, -1000.0, 0.0)));
+        .insert(Collider::cuboid(1000.0, 20.0))
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, -1500.0, 0.0)));
 
     /*Top Edge*/
     commands
         .spawn()
-        .insert(Collider::cuboid(2000.0, 20.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 1000.0, 0.0)));
+        .insert(Collider::cuboid(1000.0, 20.0))
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 1500.0, 0.0)));
 
     /*Left Edge*/
-    commands
-        .spawn()
-        .insert(Collider::cuboid(20.0, 2000.0))
+    commands.spawn()
+        .insert(Collider::cuboid(20.0, 1500.0))
         .insert_bundle(TransformBundle::from(Transform::from_xyz(-1000.0, 0.0, 0.0)));
 
     /*Right Edge*/
-    commands
-        .spawn()
-        .insert(Collider::cuboid(20.0, 1000.0))
+    commands.spawn()
+        .insert(Collider::cuboid(20.0, 1500.0))
         .insert_bundle(TransformBundle::from(Transform::from_xyz(1000.0, 0.0, 0.0)));
+}
+
+fn setup_areas(mut commands: Commands) {
+//    commands.spawn()
+ //       .insert(Collider::cuboid(
 }
