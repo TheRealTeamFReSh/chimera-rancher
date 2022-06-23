@@ -17,6 +17,7 @@ fn main() {
         .add_plugin(camera::CameraPlugin)
         .add_startup_system(setup_physics)
         .add_startup_system(setup_boundaries)
+        .add_startup_system(setup_areas)
         .run();
 }
 
@@ -47,9 +48,33 @@ fn setup_boundaries(mut commands: Commands) {
     commands.spawn()
         .insert(Collider::cuboid(20.0, 1500.0))
         .insert_bundle(TransformBundle::from(Transform::from_xyz(1000.0, 0.0, 0.0)));
+
+    //Right river
+    commands.spawn()
+        .insert(Collider::cuboid(450.0, 200.0))
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(530.0, 0.0, 0.0)));
+
+    //Left river
+    commands.spawn()
+        .insert(Collider::cuboid(450.0, 200.0))
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(-530.0, 0.0, 0.0)));
 }
 
 fn setup_areas(mut commands: Commands) {
-//    commands.spawn()
- //       .insert(Collider::cuboid(
+    //Human area
+    commands.spawn()
+       .insert(Collider::cuboid(980.0, 640.0))
+       .insert(Sensor(true))
+       .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 840.0, 0.0)));
+
+    //Evil area
+    commands.spawn()
+        .insert(Collider::cuboid(980.0, 640.0))
+        .insert(Sensor(true))
+        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, -840.0, 0.0)));
 }
+
+
+
+
+
