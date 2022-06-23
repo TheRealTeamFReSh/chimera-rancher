@@ -1,12 +1,30 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::camera::CameraTarget;
+use crate::{
+    animals::{AnimalAttributesResource, AnimalComponent},
+    camera::CameraTarget,
+    chimeras::{ChimeraPartAttributes, ChimeraPartKind},
+};
+
+pub const HEAD_SPEED_PERCENT: f32 = 0.35;
+pub const TAIL_SPEED_PERCENT: f32 = 0.65;
+pub const HEAD_ACCEL_PERCENT: f32 = 0.35;
+pub const TAIL_ACCEL_PERCENT: f32 = 0.65;
+pub const HEAD_DECEL_PERCENT: f32 = 0.35;
+pub const TAIL_DECEL_PERCENT: f32 = 0.65;
 
 #[derive(Debug, Component)]
 pub struct Player {
     pub speed: f32,
     pub acceleration: f32,
+    pub capture_distance: f32,
+    pub inventory: PlayerInventory,
+}
+
+#[derive(Debug)]
+pub struct PlayerInventory {
+    pub chimera_parts: Vec<ChimeraPartAttributes>,
 }
 
 #[derive(Component)]
@@ -18,7 +36,8 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(spawn_player)
             .add_system(animate_player)
-            .add_system(move_player);
+            .add_system(move_player)
+            .add_system(capture_animal);
     }
 }
 
@@ -34,6 +53,10 @@ fn spawn_player(
     let player = Player {
         speed: 4.5,
         acceleration: 1.0,
+        capture_distance: 200.0,
+        inventory: PlayerInventory {
+            chimera_parts: Vec::new(),
+        },
     };
 
     commands
@@ -107,6 +130,62 @@ fn move_player(
             vel.linvel.y += player.speed * 1.0;
         } else if keyboard_input.pressed(KeyCode::S) {
             vel.linvel.y -= player.speed * 1.0;
+        }
+    }
+}
+
+// capture and animal by pressing e near it
+fn capture_animal(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut commands: Commands,
+    mut player_query: Query<(&Transform, &mut Player)>,
+    animal_query: Query<(&Transform, &AnimalComponent, Entity)>,
+    animal_attr_res: Res<AnimalAttributesResource>,
+) {
+    let capture_input = keyboard_input.just_pressed(KeyCode::E);
+
+    if capture_input {
+        for (player_transform, mut player) in player_query.iter_mut() {
+            let player_pos = player_transform.translation;
+
+            for (animal_transform, animal, animal_entity) in animal_query.iter() {
+                let animal_pos = animal_transform.translation;
+
+                // if player is in range of the animal, collect the animal
+                if player_pos.distance(animal_pos) < player.capture_distance {
+                    // get the chimera part attributes from the animal component
+                    let animal_stats = animal.stats;
+                    let animal_attr = &animal_attr_res[&animal_stats.kind];
+                    let chimera_attr_head = ChimeraPartAttributes {
+                        speed: animal_stats.speed * HEAD_SPEED_PERCENT,
+                        accel: animal_stats.accel * HEAD_ACCEL_PERCENT,
+                        decel: animal_stats.decel * HEAD_DECEL_PERCENT,
+                        collider_size: animal_attr.collider_size,
+                        texture: animal_attr.head_texture.clone(),
+                        kind: ChimeraPartKind::Head(animal_stats.kind),
+                    };
+                    let chimera_attr_tail = ChimeraPartAttributes {
+                        speed: animal_stats.speed * TAIL_SPEED_PERCENT,
+                        accel: animal_stats.accel * TAIL_ACCEL_PERCENT,
+                        decel: animal_stats.decel * TAIL_DECEL_PERCENT,
+                        collider_size: animal_attr.collider_size,
+                        texture: animal_attr.tail_texture.clone(),
+                        kind: ChimeraPartKind::Tail(animal_stats.kind),
+                    };
+
+                    // add chimera parts to inventory
+                    player.inventory.chimera_parts.push(chimera_attr_head);
+                    player.inventory.chimera_parts.push(chimera_attr_tail);
+
+                    // print the attributes from the parts
+                    println!("capturing {:?}", animal.stats);
+                    println!("inventory {:?}", player.inventory);
+
+                    // despawn the animal
+                    commands.entity(animal_entity).despawn_recursive();
+                    break;
+                }
+            }
         }
     }
 }
