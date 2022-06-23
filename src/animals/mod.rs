@@ -9,6 +9,8 @@ use self::{behavior::AnimalBehavior, bob_anim::BobbingAnim};
 mod behavior;
 mod bob_anim;
 
+const STATS_DEVIATION: f32 = 0.5;
+
 pub struct AnimalsPlugin;
 
 impl Plugin for AnimalsPlugin {
@@ -19,9 +21,11 @@ impl Plugin for AnimalsPlugin {
             AnimalAttributes {
                 speed: 60.0,
                 accel: 1.5,
-                decel: 7.0,
+                decel: 6.0,
                 collider_size: Vec2::new(24.0, 10.0),
                 texture: "pig.png".to_string(),
+                head_texture: "pighead.png".to_string(),
+                tail_texture: "pigtail.png".to_string(),
                 behavior: AnimalBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
                     base_duration: 2.5,
@@ -36,9 +40,11 @@ impl Plugin for AnimalsPlugin {
             AnimalAttributes {
                 speed: 50.0,
                 accel: 1.75,
-                decel: 7.0,
+                decel: 6.0,
                 collider_size: Vec2::new(24.0, 10.0),
                 texture: "cow.png".to_string(),
+                head_texture: "cowhead.png".to_string(),
+                tail_texture: "cowtail.png".to_string(),
                 behavior: AnimalBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
                     base_duration: 3.5,
@@ -53,9 +59,11 @@ impl Plugin for AnimalsPlugin {
             AnimalAttributes {
                 speed: 80.0,
                 accel: 2.2,
-                decel: 7.0,
+                decel: 6.0,
                 collider_size: Vec2::new(24.0, 10.0),
                 texture: "dog.png".to_string(),
+                head_texture: "doghead.png".to_string(),
+                tail_texture: "dogtail.png".to_string(),
                 behavior: AnimalBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
                     base_duration: 1.5,
@@ -70,9 +78,11 @@ impl Plugin for AnimalsPlugin {
             AnimalAttributes {
                 speed: 70.0,
                 accel: 2.0,
-                decel: 7.0,
+                decel: 6.0,
                 collider_size: Vec2::new(12.0, 10.0),
                 texture: "chicken.png".to_string(),
+                head_texture: "chickenhead.png".to_string(),
+                tail_texture: "chickentail.png".to_string(),
                 behavior: AnimalBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
                     base_duration: 1.0,
@@ -87,9 +97,11 @@ impl Plugin for AnimalsPlugin {
             AnimalAttributes {
                 speed: 100.0,
                 accel: 3.0,
-                decel: 7.0,
+                decel: 6.0,
                 collider_size: Vec2::new(24.0, 10.0),
                 texture: "horse.png".to_string(),
+                head_texture: "horsehead.png".to_string(),
+                tail_texture: "horsetail.png".to_string(),
                 behavior: AnimalBehavior::Idle {
                     timer: Timer::from_seconds(2.0, false),
                     base_duration: 6.0,
@@ -107,7 +119,7 @@ impl Plugin for AnimalsPlugin {
     }
 }
 
-#[derive(Hash, PartialEq, Eq)]
+#[derive(Hash, PartialEq, Eq, Clone, Copy, Debug)]
 pub enum AnimalKind {
     Pig,
     Cow,
@@ -119,31 +131,34 @@ pub enum AnimalKind {
 // Core component of animal
 #[derive(Component)]
 pub struct AnimalComponent {
-    behavior: AnimalBehavior,
-    stats: AnimalStats,
+    pub behavior: AnimalBehavior,
+    pub stats: AnimalStats,
 }
 
 #[derive(Component)]
 pub struct AnimalSprite;
 
 // Stores stats for animals
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct AnimalStats {
-    speed: f32,
-    accel: f32,
-    decel: f32,
+    pub speed: f32,
+    pub accel: f32,
+    pub decel: f32,
+    pub kind: AnimalKind,
 }
 
 pub struct AnimalAttributes {
-    speed: f32,
-    accel: f32,
-    decel: f32,
-    collider_size: Vec2,
-    texture: String,
-    behavior: AnimalBehavior,
+    pub speed: f32,
+    pub accel: f32,
+    pub decel: f32,
+    pub collider_size: Vec2,
+    pub texture: String,
+    pub head_texture: String,
+    pub tail_texture: String,
+    pub behavior: AnimalBehavior,
 }
 
-type AnimalAttributesResource = HashMap<AnimalKind, AnimalAttributes>;
+pub type AnimalAttributesResource = HashMap<AnimalKind, AnimalAttributes>;
 
 // Test function, spawns one of each animal
 fn spawn_test_system(
@@ -218,9 +233,17 @@ pub fn spawn_animal(
         .insert(AnimalComponent {
             behavior: attributes.behavior.clone(),
             stats: AnimalStats {
-                speed: attributes.speed,
-                accel: attributes.accel,
-                decel: attributes.decel,
+                //speed: attributes.speed,
+                speed: rand::thread_rng().gen_range(
+                    attributes.speed * STATS_DEVIATION..attributes.speed * (1.0 + STATS_DEVIATION),
+                ),
+                accel: rand::thread_rng().gen_range(
+                    attributes.accel * STATS_DEVIATION..attributes.accel * (1.0 + STATS_DEVIATION),
+                ),
+                decel: rand::thread_rng().gen_range(
+                    attributes.decel * STATS_DEVIATION..attributes.decel * (1.0 + STATS_DEVIATION),
+                ),
+                kind: animal_kind.clone(),
             },
         })
         .insert(RigidBody::Dynamic)

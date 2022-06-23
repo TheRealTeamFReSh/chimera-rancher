@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use std::collections::HashMap;
+use rand::prelude::SliceRandom;
 
-use self::chimera_part::ChimeraPartKind;
-use crate::animals::AnimalKind;
+pub use self::chimera_part::ChimeraPartKind;
+use crate::player::Player;
 
 mod chimera_part;
 
@@ -20,189 +20,104 @@ pub struct ChimeraStats {
     decel: f32,
 }
 
+// used for passing data from animals to chimeras
+#[derive(Debug, Clone, PartialEq)]
 pub struct ChimeraPartAttributes {
-    speed: f32,
-    accel: f32,
-    decel: f32,
-    collider_size: Vec2,
-    texture: String,
+    pub speed: f32,
+    pub accel: f32,
+    pub decel: f32,
+    pub collider_size: Vec2,
+    pub texture: String,
+    pub kind: ChimeraPartKind,
 }
-
-type ChimeraPartAttributesResource = HashMap<ChimeraPartKind, ChimeraPartAttributes>;
 
 pub struct ChimerasPlugin;
 
 impl Plugin for ChimerasPlugin {
     fn build(&self, app: &mut App) {
-        let mut chimera_part_attr_res = ChimeraPartAttributesResource::default();
-        chimera_part_attr_res.insert(
-            ChimeraPartKind::Head(AnimalKind::Pig),
-            ChimeraPartAttributes {
-                speed: 60.0,
-                accel: 1.5,
-                decel: 7.0,
-                collider_size: Vec2::new(12.0, 10.0),
-                texture: "pighead.png".to_string(),
-            },
-        );
-        chimera_part_attr_res.insert(
-            ChimeraPartKind::Tail(AnimalKind::Pig),
-            ChimeraPartAttributes {
-                speed: 60.0,
-                accel: 1.5,
-                decel: 7.0,
-                collider_size: Vec2::new(12.0, 10.0),
-                texture: "pigtail.png".to_string(),
-            },
-        );
-        chimera_part_attr_res.insert(
-            ChimeraPartKind::Head(AnimalKind::Cow),
-            ChimeraPartAttributes {
-                speed: 50.0,
-                accel: 1.75,
-                decel: 7.0,
-                collider_size: Vec2::new(12.0, 10.0),
-                texture: "cowhead.png".to_string(),
-            },
-        );
-        chimera_part_attr_res.insert(
-            ChimeraPartKind::Tail(AnimalKind::Cow),
-            ChimeraPartAttributes {
-                speed: 50.0,
-                accel: 1.75,
-                decel: 7.0,
-                collider_size: Vec2::new(12.0, 10.0),
-                texture: "cowtail.png".to_string(),
-            },
-        );
-        chimera_part_attr_res.insert(
-            ChimeraPartKind::Head(AnimalKind::Dog),
-            ChimeraPartAttributes {
-                speed: 80.0,
-                accel: 2.2,
-                decel: 7.0,
-                collider_size: Vec2::new(12.0, 10.0),
-                texture: "doghead.png".to_string(),
-            },
-        );
-        chimera_part_attr_res.insert(
-            ChimeraPartKind::Tail(AnimalKind::Dog),
-            ChimeraPartAttributes {
-                speed: 80.0,
-                accel: 2.2,
-                decel: 7.0,
-                collider_size: Vec2::new(12.0, 10.0),
-                texture: "dogtail.png".to_string(),
-            },
-        );
-        chimera_part_attr_res.insert(
-            ChimeraPartKind::Head(AnimalKind::Chicken),
-            ChimeraPartAttributes {
-                speed: 70.0,
-                accel: 2.0,
-                decel: 7.0,
-                collider_size: Vec2::new(6.0, 10.0),
-                texture: "chickenhead.png".to_string(),
-            },
-        );
-        chimera_part_attr_res.insert(
-            ChimeraPartKind::Tail(AnimalKind::Chicken),
-            ChimeraPartAttributes {
-                speed: 70.0,
-                accel: 2.0,
-                decel: 7.0,
-                collider_size: Vec2::new(6.0, 10.0),
-                texture: "chickentail.png".to_string(),
-            },
-        );
-        chimera_part_attr_res.insert(
-            ChimeraPartKind::Head(AnimalKind::Horse),
-            ChimeraPartAttributes {
-                speed: 100.0,
-                accel: 3.0,
-                decel: 7.0,
-                collider_size: Vec2::new(12.0, 10.0),
-                texture: "horsehead.png".to_string(),
-            },
-        );
-        chimera_part_attr_res.insert(
-            ChimeraPartKind::Tail(AnimalKind::Horse),
-            ChimeraPartAttributes {
-                speed: 100.0,
-                accel: 3.0,
-                decel: 7.0,
-                collider_size: Vec2::new(12.0, 10.0),
-                texture: "horsetail.png".to_string(),
-            },
-        );
-
-        app.insert_resource(chimera_part_attr_res)
-            .add_startup_system(chimera_test_system);
+        app.add_system(test_spawn_chimera_system);
     }
 }
 
-pub fn chimera_test_system(
+// spawns a random chimera from 2 parts in the player's inventory
+pub fn test_spawn_chimera_system(
+    keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    chimera_part_attr_res: Res<ChimeraPartAttributesResource>,
+    mut player_query: Query<(&mut Player, &Transform)>,
 ) {
-    spawn_chimera(
-        (
-            ChimeraPartKind::Head(AnimalKind::Pig),
-            ChimeraPartKind::Head(AnimalKind::Pig),
-        ),
-        Vec2::new(0.0, 0.0),
-        &chimera_part_attr_res,
-        &mut commands,
-        &asset_server,
-    );
+    let capture_input = keyboard_input.just_pressed(KeyCode::P);
 
-    spawn_chimera(
-        (
-            ChimeraPartKind::Tail(AnimalKind::Cow),
-            ChimeraPartKind::Tail(AnimalKind::Cow),
-        ),
-        Vec2::new(-20.0, -60.0),
-        &chimera_part_attr_res,
-        &mut commands,
-        &asset_server,
-    );
+    if capture_input {
+        if let Some((mut player, player_transform)) = player_query.iter_mut().next() {
+            if player.inventory.chimera_parts.len() >= 2 {
+                // pick 2 random chimera parts to combine
+                let head_part = player
+                    .inventory
+                    .chimera_parts
+                    .choose(&mut rand::thread_rng())
+                    .unwrap()
+                    .clone();
 
-    spawn_chimera(
-        (
-            ChimeraPartKind::Head(AnimalKind::Pig),
-            ChimeraPartKind::Tail(AnimalKind::Chicken),
-        ),
-        Vec2::new(20.0, 60.0),
-        &chimera_part_attr_res,
-        &mut commands,
-        &asset_server,
-    );
+                let head_part_idx = player
+                    .inventory
+                    .chimera_parts
+                    .iter()
+                    .position(|part| part == &head_part)
+                    .unwrap();
 
-    spawn_chimera(
-        (
-            ChimeraPartKind::Head(AnimalKind::Chicken),
-            ChimeraPartKind::Head(AnimalKind::Dog),
-        ),
-        Vec2::new(-120.0, 50.0),
-        &chimera_part_attr_res,
-        &mut commands,
-        &asset_server,
-    );
+                player.inventory.chimera_parts.remove(head_part_idx);
+
+                let tail_part = player
+                    .inventory
+                    .chimera_parts
+                    .choose(&mut rand::thread_rng())
+                    .unwrap()
+                    .clone();
+
+                let tail_part_idx = player
+                    .inventory
+                    .chimera_parts
+                    .iter()
+                    .position(|part| part == &tail_part)
+                    .unwrap();
+
+                player.inventory.chimera_parts.remove(tail_part_idx);
+
+                spawn_chimera(
+                    (head_part, tail_part),
+                    Vec2::new(
+                        player_transform.translation.x,
+                        player_transform.translation.y + 150.0,
+                    ),
+                    &mut commands,
+                    &asset_server,
+                )
+            }
+        }
+    }
 }
 
+// spawns a chimera from two chimera parts
 pub fn spawn_chimera(
-    chimera_parts: (ChimeraPartKind, ChimeraPartKind),
+    chimera_parts: (ChimeraPartAttributes, ChimeraPartAttributes),
     position: Vec2,
-    chimera_part_attr_res: &ChimeraPartAttributesResource,
     commands: &mut Commands,
     asset_server: &AssetServer,
 ) {
-    // TODO: prevent/correct player from creating normal animals and backwards animals
+    let mut head_attributes = chimera_parts.0.clone();
+    let mut tail_attributes = chimera_parts.1.clone();
 
-    let head_attributes = &chimera_part_attr_res[&chimera_parts.0];
-    let tail_attributes = &chimera_part_attr_res[&chimera_parts.1];
+    // swap head and tail if they would otherwise create a backwards chimera
+    if matches!(head_attributes.kind, ChimeraPartKind::Tail(_))
+        && matches!(tail_attributes.kind, ChimeraPartKind::Head(_))
+    {
+        let temp = head_attributes.clone();
+        head_attributes = tail_attributes;
+        tail_attributes = temp;
+    }
 
+    // spawn the chimera
     commands
         .spawn()
         .insert_bundle(TransformBundle::from(Transform::from_translation(
@@ -221,7 +136,7 @@ pub fn spawn_chimera(
         })
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(
-            head_attributes.collider_size.x + tail_attributes.collider_size.x,
+            head_attributes.collider_size.x / 2.0 + tail_attributes.collider_size.x / 2.0,
             head_attributes.collider_size.y,
         ))
         .insert(LockedAxes::ROTATION_LOCKED)
@@ -230,7 +145,7 @@ pub fn spawn_chimera(
                 .spawn_bundle(SpriteBundle {
                     texture: asset_server.load(&head_attributes.texture),
                     sprite: Sprite {
-                        flip_x: matches!(chimera_parts.0, ChimeraPartKind::Tail(_)),
+                        flip_x: matches!(head_attributes.kind, ChimeraPartKind::Tail(_)),
                         ..default()
                     },
                     ..default()
@@ -245,7 +160,7 @@ pub fn spawn_chimera(
                 .spawn_bundle(SpriteBundle {
                     texture: asset_server.load(&tail_attributes.texture),
                     sprite: Sprite {
-                        flip_x: matches!(chimera_parts.1, ChimeraPartKind::Head(_)),
+                        flip_x: matches!(tail_attributes.kind, ChimeraPartKind::Head(_)),
                         ..default()
                     },
                     ..default()
@@ -256,66 +171,4 @@ pub fn spawn_chimera(
                     0.0,
                 ));
         });
-
-    /*
-    let mut chimera_entity = commands.spawn();
-    match chimera_parts.0 {
-        ChimeraPartKind::Head(animal_kind) => {
-            // give this chimera part the collider
-            // flip sprite if head part
-            match animal_kind {
-                crate::animals::AnimalKind::Pig => {
-                    chimera_entity
-                        .insert_bundle(SpriteBundle {
-                            texture: asset_server.load("pighead.png"),
-                            sprite: Sprite {
-                                flip_x: true,
-                                ..default()
-                            },
-                            ..default()
-                        })
-                        .insert(Transform::from_translation(position.extend(0.0)))
-                        .insert(Velocity::default())
-                        .insert(ChimeraPartComponent)
-                        .insert(RigidBody::Dynamic)
-                        .insert(Collider::cuboid(25.0, 10.0))
-                        .insert(LockedAxes::ROTATION_LOCKED);
-                }
-                crate::animals::AnimalKind::Cow => todo!(),
-                crate::animals::AnimalKind::Dog => todo!(),
-                crate::animals::AnimalKind::Horse => todo!(),
-                crate::animals::AnimalKind::Chicken => todo!(),
-            }
-        }
-        ChimeraPartKind::Tail(animal_kind) => match animal_kind {
-            crate::animals::AnimalKind::Pig => todo!(),
-            crate::animals::AnimalKind::Cow => todo!(),
-            crate::animals::AnimalKind::Dog => todo!(),
-            crate::animals::AnimalKind::Horse => todo!(),
-            crate::animals::AnimalKind::Chicken => todo!(),
-        },
-    };
-
-    chimera_entity.with_children(|parent| {
-        match chimera_parts.1 {
-            ChimeraPartKind::Head(animal_kind) => match animal_kind {
-                AnimalKind::Pig => parent.spawn_bundle(SpriteBundle {
-                    texture: asset_server.load("pighead.png"),
-                    ..default()
-                }),
-                AnimalKind::Cow => todo!(),
-                AnimalKind::Dog => todo!(),
-                AnimalKind::Horse => todo!(),
-                AnimalKind::Chicken => todo!(),
-            },
-            ChimeraPartKind::Tail(animal_kind) => match animal_kind {
-                AnimalKind::Pig => todo!(),
-                AnimalKind::Cow => todo!(),
-                AnimalKind::Dog => todo!(),
-                AnimalKind::Horse => todo!(),
-                AnimalKind::Chicken => todo!(),
-            },
-        };
-    });
-    */
 }
