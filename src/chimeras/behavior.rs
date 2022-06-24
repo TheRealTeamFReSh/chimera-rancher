@@ -2,13 +2,9 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use super::{ChimeraComponent, ChimeraSprite};
-use crate::behaviors;
 use crate::player::Player;
 use crate::villagers::VillagerComponent;
-
-const FOLLOW_RANGE: f32 = 450.0;
-const FOLLOW_DISTANCE: f32 = 100.0;
-const PURSUE_RANGE: f32 = 250.0;
+use crate::{behaviors, constants};
 
 // Handles animals behaving according to their current behavior
 pub fn chimera_behavior_system(
@@ -44,7 +40,7 @@ pub fn chimera_behavior_system(
                 if position.distance(test_pos) < position.distance(lowest_pos) {
                     pursue_villager_pos = Some(test_pos);
                 }
-            } else if position.distance(test_pos) < PURSUE_RANGE {
+            } else if position.distance(test_pos) < constants::PURSUE_RANGE {
                 pursue_villager_pos = Some(test_pos);
             }
         }
@@ -73,10 +69,10 @@ pub fn chimera_behavior_system(
                     chimera.behavior = behaviors::UnitBehavior::Pursue {
                         target: Some(villager_pos),
                     };
-                } else if position.distance(player_position) < FOLLOW_RANGE {
+                } else if position.distance(player_position) < constants::FOLLOW_RANGE {
                     chimera.behavior = behaviors::UnitBehavior::Follow {
                         target: Some(player_position),
-                        distance: FOLLOW_DISTANCE,
+                        distance: constants::FOLLOW_DISTANCE,
                     }
                 }
             }
@@ -125,7 +121,7 @@ pub fn chimera_behavior_system(
                     chimera.behavior = behaviors::UnitBehavior::Pursue {
                         target: Some(villager_pos),
                     };
-                } else if position.distance(player_position) > FOLLOW_RANGE {
+                } else if position.distance(player_position) > constants::FOLLOW_RANGE {
                     chimera.behavior = behaviors::UnitBehavior::Idle {
                         timer: Timer::from_seconds(2.0, false),
                         base_duration: 2.5,

@@ -7,6 +7,7 @@ mod animations;
 mod behaviors;
 mod camera;
 mod chimeras;
+mod constants;
 mod health;
 mod player;
 mod stats_window;
@@ -28,6 +29,7 @@ fn main() {
         .add_startup_system(setup_physics)
         .add_startup_system(setup_boundaries)
         .add_startup_system(setup_areas)
+        .add_startup_system(constants::compute_max_stats)
         .run();
 }
 

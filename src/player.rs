@@ -5,18 +5,8 @@ use crate::{
     animals::{AnimalAttributesResource, AnimalComponent},
     camera::CameraTarget,
     chimeras::{ChimeraPartAttributes, ChimeraPartKind},
+    constants,
 };
-
-pub const HEAD_SPEED_PERCENT: f32 = 0.35;
-pub const TAIL_SPEED_PERCENT: f32 = 0.65;
-pub const HEAD_ACCEL_PERCENT: f32 = 0.35;
-pub const TAIL_ACCEL_PERCENT: f32 = 0.65;
-pub const HEAD_DECEL_PERCENT: f32 = 0.35;
-pub const TAIL_DECEL_PERCENT: f32 = 0.65;
-pub const HEAD_HEALTH_PERCENT: f32 = 0.50;
-pub const TAIL_HEALTH_PERCENT: f32 = 0.50;
-pub const HEAD_ATTACK_PERCENT: f32 = 0.7;
-pub const TAIL_ATTACK_PERCENT: f32 = 0.3;
 
 #[derive(Debug, Component)]
 pub struct Player {
@@ -171,21 +161,21 @@ fn capture_animal(
                     let animal_stats = animal.stats;
                     let animal_attr = &animal_attr_res[&animal_stats.kind];
                     let chimera_attr_head = ChimeraPartAttributes {
-                        attack: animal_stats.health * HEAD_ATTACK_PERCENT,
-                        health: animal_stats.health * HEAD_HEALTH_PERCENT,
-                        speed: animal_stats.speed * HEAD_SPEED_PERCENT,
-                        accel: animal_stats.accel * HEAD_ACCEL_PERCENT,
-                        decel: animal_stats.decel * HEAD_DECEL_PERCENT,
+                        attack: animal_stats.attack * constants::HEAD_ATTACK_PERCENT,
+                        health: animal_stats.health * constants::HEAD_HEALTH_PERCENT,
+                        speed: animal_stats.speed * constants::HEAD_SPEED_PERCENT,
+                        accel: animal_stats.accel * constants::HEAD_ACCEL_PERCENT,
+                        decel: animal_stats.decel * constants::HEAD_DECEL_PERCENT,
                         collider_size: animal_attr.collider_size,
                         texture: animal_attr.head_texture.clone(),
                         kind: ChimeraPartKind::Head(animal_stats.kind),
                     };
                     let chimera_attr_tail = ChimeraPartAttributes {
-                        attack: animal_stats.health * TAIL_ATTACK_PERCENT,
-                        health: animal_stats.health * TAIL_HEALTH_PERCENT,
-                        speed: animal_stats.speed * TAIL_SPEED_PERCENT,
-                        accel: animal_stats.accel * TAIL_ACCEL_PERCENT,
-                        decel: animal_stats.decel * TAIL_DECEL_PERCENT,
+                        attack: animal_stats.attack * constants::TAIL_ATTACK_PERCENT,
+                        health: animal_stats.health * constants::TAIL_HEALTH_PERCENT,
+                        speed: animal_stats.speed * constants::TAIL_SPEED_PERCENT,
+                        accel: animal_stats.accel * constants::TAIL_ACCEL_PERCENT,
+                        decel: animal_stats.decel * constants::TAIL_DECEL_PERCENT,
                         collider_size: animal_attr.collider_size,
                         texture: animal_attr.tail_texture.clone(),
                         kind: ChimeraPartKind::Tail(animal_stats.kind),

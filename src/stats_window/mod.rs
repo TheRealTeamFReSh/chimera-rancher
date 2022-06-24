@@ -120,12 +120,6 @@ fn entity_click_detection(
                 // get the chimera component
                 if let Ok(chi_compo) = q_chimera.get(entity) {
                     let stats = chi_compo.stats;
-                    log::info!(
-                        "The entity {:?} contains the point with stats: {:?}",
-                        entity,
-                        stats
-                    );
-
                     stats_window.target = Some(entity);
                     stats_window.target_setup = false;
                 }
