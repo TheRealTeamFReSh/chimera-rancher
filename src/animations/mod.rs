@@ -3,10 +3,10 @@ use std::f32::consts::PI;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::Velocity;
 
-use crate::chimeras::{ChimeraComponent, ChimeraSprite};
+use crate::chimeras::ChimeraComponent;
 
-use crate::animals::{AnimalComponent, AnimalSprite};
-use crate::villagers::{VillagerComponent, VillagerSprite};
+use crate::animals::AnimalComponent;
+use crate::villagers::VillagerComponent;
 
 const ANIMATION_SPEED_FACTOR: f32 = 0.2;
 const ANIMATION_OFFSET_FACTOR: f32 = 4.0;
