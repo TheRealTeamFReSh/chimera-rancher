@@ -209,7 +209,7 @@ pub fn display_stats_window(
 
     // if finished
     if stats_window.target != None && !stats_window.opened {
-        log::info!("opening");
+        log::debug!("opening stat window");
 
         stats_window.opened = true;
         animator.set_tweenable(Tween::new(
@@ -222,7 +222,7 @@ pub fn display_stats_window(
             },
         ));
     } else if stats_window.target == None && stats_window.opened {
-        log::info!("closing");
+        log::debug!("closing stat window");
 
         stats_window.opened = false;
         animator.set_tweenable(Tween::new(

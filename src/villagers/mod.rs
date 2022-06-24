@@ -7,14 +7,22 @@ mod behavior;
 use crate::animations::BobbingAnim;
 use crate::behaviors::UnitBehavior;
 use crate::health::Health;
+use crate::states::GameStates;
 const STATS_DEVIATION: f32 = 0.2;
 
 pub struct VillagersPlugin;
 
 impl Plugin for VillagersPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_test_villager_system)
-            .add_system(behavior::villager_behavior_system);
+        // on enter
+        app.add_system_set(
+            SystemSet::on_enter(GameStates::Game).with_system(spawn_test_villager_system),
+        );
+
+        // on update
+        app.add_system_set(
+            SystemSet::on_update(GameStates::Game).with_system(behavior::villager_behavior_system),
+        );
     }
 }
 

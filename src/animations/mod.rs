@@ -7,13 +7,14 @@ use crate::chimeras::ChimeraComponent;
 
 use crate::animals::AnimalComponent;
 use crate::constants;
+use crate::states::GameStates;
 use crate::villagers::VillagerComponent;
 
 pub struct AnimationsPlugin;
 
 impl Plugin for AnimationsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(bob_animation);
+        app.add_system_set(SystemSet::on_update(GameStates::Game).with_system(bob_animation));
     }
 }
 
