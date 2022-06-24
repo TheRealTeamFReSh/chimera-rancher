@@ -6,11 +6,10 @@ use std::collections::HashMap;
 
 use crate::animations::BobbingAnim;
 use crate::behaviors::UnitBehavior;
+use crate::constants;
 use crate::health::Health;
 
 mod behavior;
-
-const STATS_DEVIATION: f32 = 0.5;
 
 pub struct AnimalsPlugin;
 
@@ -237,7 +236,8 @@ pub fn spawn_animal(
     random_direction.y = dir[1];
 
     let animal_health = rand::thread_rng().gen_range(
-        attributes.health * (1.0 - STATS_DEVIATION)..attributes.health * (1.0 + STATS_DEVIATION),
+        attributes.health * (1.0 - constants::STATS_DEVIATION)
+            ..attributes.health * (1.0 + constants::STATS_DEVIATION),
     );
 
     commands
@@ -252,20 +252,20 @@ pub fn spawn_animal(
             behavior: attributes.behavior.clone(),
             stats: AnimalStats {
                 attack: rand::thread_rng().gen_range(
-                    attributes.attack * (1.0 - STATS_DEVIATION)
-                        ..attributes.attack * (1.0 + STATS_DEVIATION),
+                    attributes.attack * (1.0 - constants::STATS_DEVIATION)
+                        ..attributes.attack * (1.0 + constants::STATS_DEVIATION),
                 ),
                 speed: rand::thread_rng().gen_range(
-                    attributes.speed * (1.0 - STATS_DEVIATION)
-                        ..attributes.speed * (1.0 + STATS_DEVIATION),
+                    attributes.speed * (1.0 - constants::STATS_DEVIATION)
+                        ..attributes.speed * (1.0 + constants::STATS_DEVIATION),
                 ),
                 accel: rand::thread_rng().gen_range(
-                    attributes.accel * (1.0 - STATS_DEVIATION)
-                        ..attributes.accel * (1.0 + STATS_DEVIATION),
+                    attributes.accel * (1.0 - constants::STATS_DEVIATION)
+                        ..attributes.accel * (1.0 + constants::STATS_DEVIATION),
                 ),
                 decel: rand::thread_rng().gen_range(
-                    attributes.decel * (1.0 - STATS_DEVIATION)
-                        ..attributes.decel * (1.0 + STATS_DEVIATION),
+                    attributes.decel * (1.0 - constants::STATS_DEVIATION)
+                        ..attributes.decel * (1.0 + constants::STATS_DEVIATION),
                 ),
                 health: animal_health,
                 kind: *animal_kind,

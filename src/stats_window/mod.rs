@@ -1,9 +1,10 @@
 use bevy::{log, prelude::*};
 use bevy_rapier2d::{plugin::RapierContext, prelude::InteractionGroups};
 
-use crate::{camera::MainCamera, chimeras::ChimeraComponent};
+use crate::{animals::AnimalComponent, camera::MainCamera, chimeras::ChimeraComponent};
 
 mod ui;
+mod ui_bars;
 
 pub struct StatsWindowPlugin;
 
@@ -11,6 +12,7 @@ impl Plugin for StatsWindowPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(StatsWindow {
             target: None,
+            target_type: EntityType::None,
             cursor: None,
             target_setup: false,
             opened: false,
@@ -23,9 +25,17 @@ impl Plugin for StatsWindowPlugin {
     }
 }
 
+#[derive(PartialEq)]
+pub enum EntityType {
+    None,
+    Animal,
+    Chimera,
+}
+
 #[derive(Component)]
 pub struct StatsWindow {
     pub target: Option<Entity>,
+    pub target_type: EntityType,
     pub cursor: Option<Entity>,
     pub target_setup: bool,
     pub opened: bool,
@@ -69,6 +79,7 @@ fn entity_click_detection(
     windows: Res<Windows>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     q_chimera: Query<&ChimeraComponent>,
+    q_animal: Query<&AnimalComponent>,
     mouse_button: Res<Input<MouseButton>>,
     mut stats_window: ResMut<StatsWindow>,
     mut commands: Commands,
@@ -79,6 +90,7 @@ fn entity_click_detection(
             commands.entity(target_entity).despawn();
             stats_window.target = None;
             stats_window.cursor = None;
+            stats_window.target_type = EntityType::None;
         }
 
         // get the camera
@@ -117,18 +129,40 @@ fn entity_click_detection(
             InteractionGroups::all(),
             None,
             |entity| {
-                // get the chimera component
+                // if we clicked on a chimera, get the chimera component
                 if let Ok(chi_compo) = q_chimera.get(entity) {
                     let stats = chi_compo.stats;
-                    log::info!(
-                        "The entity {:?} contains the point with stats: {:?}",
+                    log::debug!(
+                        "The chimera {:?} contains the point with stats: {:?}",
                         entity,
                         stats
                     );
 
                     stats_window.target = Some(entity);
                     stats_window.target_setup = false;
+                    stats_window.target_type = EntityType::Chimera;
+
+                    // stop searching
+                    return false;
                 }
+
+                // if we clicked on an animal, get the animal component
+                if let Ok(ani_compo) = q_animal.get(entity) {
+                    let stats = ani_compo.stats;
+                    log::debug!(
+                        "The animal {:?} contains the point with stats: {:?}",
+                        entity,
+                        stats
+                    );
+
+                    stats_window.target = Some(entity);
+                    stats_window.target_setup = false;
+                    stats_window.target_type = EntityType::Animal;
+
+                    // stop searching
+                    return false;
+                }
+
                 // Return `false` instead if we want to stop searching for other colliders containing this point.
                 true
             },

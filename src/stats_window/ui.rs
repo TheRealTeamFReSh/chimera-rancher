@@ -1,24 +1,23 @@
 use bevy::{log, prelude::*};
 use bevy_tweening::{lens::UiPositionLens, Animator, EaseFunction, Tween, TweeningType};
 
-use crate::chimeras::ChimeraComponent;
+use crate::{
+    animals::AnimalComponent,
+    chimeras::ChimeraComponent,
+    constants::{self, MaxStats},
+    health::Health,
+};
 
-use super::StatsWindow;
+use super::{ui_bars::*, EntityType, StatsWindow};
 
 #[derive(Component)]
 pub struct StatsWindowUI;
 
 #[derive(Component)]
-pub struct SpeedTextComponent;
-
-#[derive(Component)]
-pub struct AccelTextComponent;
-
-#[derive(Component)]
-pub struct DecelTextComponent;
+pub struct StatWindowTitle;
 
 const CLOSED_POS: Rect<Val> = Rect {
-    right: Val::Px(-250.),
+    right: Val::Px(-350.),
     top: Val::Px(0.),
     bottom: Val::Auto,
     left: Val::Auto,
@@ -31,37 +30,75 @@ const OPENED_POS: Rect<Val> = Rect {
 };
 
 pub fn update_window_stats(
-    stats_window: Res<StatsWindow>,
-    q_chimera: Query<&ChimeraComponent>,
-    mut q_speed_text: Query<&mut Text, With<SpeedTextComponent>>,
-    mut q_accel_text: Query<
-        &mut Text,
-        (
-            With<AccelTextComponent>,
-            Without<SpeedTextComponent>,
-            Without<DecelTextComponent>,
-        ),
+    // mut commands: Commands,
+    mut stats_window: ResMut<StatsWindow>,
+    maxi_stats: Res<MaxStats>,
+    q_chimera: Query<(&Health, &ChimeraComponent)>,
+    q_animal: Query<(&Health, &AnimalComponent)>,
+    q_ui_bar: Query<(&Children, &UIBar), (Without<MaxBarComponent>, Without<ValueBarComponent>)>,
+    mut q_ui_bar_max: Query<
+        (&Children, &mut Style),
+        (With<MaxBarComponent>, Without<ValueBarComponent>),
     >,
-    mut q_deccel_text: Query<
-        &mut Text,
-        (
-            With<DecelTextComponent>,
-            Without<SpeedTextComponent>,
-            Without<AccelTextComponent>,
-        ),
-    >,
+    mut q_ui_bar_value: Query<&mut Style, With<ValueBarComponent>>,
 ) {
     if let Some(target_entity) = stats_window.target {
         // get the stats
-        let stats = q_chimera.get(target_entity).unwrap().stats;
-        for mut text in q_speed_text.iter_mut() {
-            text.sections[0].value = format!("Speed: {:.2}", stats.speed);
+        let (health, accel, decel, attack, speed) =
+            if stats_window.target_type == EntityType::Chimera {
+                if let Ok((health, chimera)) = q_chimera.get(target_entity) {
+                    let stats = chimera.stats;
+                    (health, stats.accel, stats.decel, stats.attack, stats.speed)
+                } else {
+                    (&constants::DEFAULT_HEALTH, 0., 0., 0., 0.)
+                }
+            } else {
+                if let Ok((health, animal)) = q_animal.get(target_entity) {
+                    let stats = animal.stats;
+                    (health, stats.accel, stats.decel, stats.attack, stats.speed)
+                } else {
+                    (&constants::DEFAULT_HEALTH, 0., 0., 0., 0.)
+                }
+            };
+
+        // if the values are null, the entity does not exist anymore
+        if health.max_health == 0. && health.health == 0. {
+            stats_window.target = None;
+            stats_window.cursor = None;
+            stats_window.target_type = EntityType::None;
+            return;
         }
-        for mut text in q_accel_text.iter_mut() {
-            text.sections[0].value = format!("Acceleration: {:.2}", stats.accel);
-        }
-        for mut text in q_deccel_text.iter_mut() {
-            text.sections[0].value = format!("Deceleration: {:.2}", stats.decel);
+
+        // for each bar
+        for (children, bar) in q_ui_bar.iter() {
+            // set value according to bartype
+            let (max_value_possible, max_value, value) = match bar.bartype {
+                BarStatType::Acceleration => (maxi_stats.accel, accel, accel),
+                BarStatType::Deceleration => (maxi_stats.decel, decel, decel),
+                BarStatType::Speed => (maxi_stats.speed, speed, speed),
+                BarStatType::Attack => (maxi_stats.attack, attack, attack),
+                BarStatType::Health => (maxi_stats.health, health.max_health, health.health),
+            };
+
+            // getting max_value
+            for child in children.iter() {
+                if let Ok((children2, mut style)) = q_ui_bar_max.get_mut(*child) {
+                    style.size = Size::new(
+                        Val::Percent(100. * max_value / max_value_possible),
+                        Val::Percent(100.),
+                    );
+
+                    // getting value
+                    for child2 in children2.iter() {
+                        if let Ok(mut style) = q_ui_bar_value.get_mut(*child2) {
+                            style.size = Size::new(
+                                Val::Percent(100. * value / max_value),
+                                Val::Percent(100.),
+                            );
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -88,7 +125,7 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     let border = NodeBundle {
         style: Style {
             position: CLOSED_POS,
-            size: Size::new(Val::Px(200.0), Val::Px(250.0)),
+            size: Size::new(Val::Px(300.0), Val::Px(450.0)),
             border: Rect::all(Val::Px(2.0)),
             ..default()
         },
@@ -101,7 +138,8 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             flex_direction: FlexDirection::ColumnReverse,
             justify_content: JustifyContent::FlexStart,
             size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-            align_items: AlignItems::FlexEnd,
+            align_items: AlignItems::Center,
+            overflow: Overflow::Hidden,
             ..default()
         },
         color: Color::rgb(0.15, 0.15, 0.15).into(),
@@ -130,72 +168,6 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     };
 
-    let speed_text = TextBundle {
-        style: Style {
-            margin: Rect {
-                left: Val::Auto,
-                right: Val::Auto,
-                top: Val::Px(10.0),
-                bottom: Val::Px(10.0),
-            },
-            ..default()
-        },
-        text: Text::with_section(
-            "Speed: 0.0",
-            TextStyle {
-                font: asset_server.load("fonts/FiraSans-Regular.ttf"),
-                font_size: 24.0,
-                color: Color::WHITE,
-            },
-            Default::default(),
-        ),
-        ..default()
-    };
-
-    let accel_text = TextBundle {
-        style: Style {
-            margin: Rect {
-                left: Val::Auto,
-                right: Val::Auto,
-                top: Val::Px(10.0),
-                bottom: Val::Px(10.0),
-            },
-            ..default()
-        },
-        text: Text::with_section(
-            "Acceleration: 0.0",
-            TextStyle {
-                font: asset_server.load("fonts/FiraSans-Regular.ttf"),
-                font_size: 24.0,
-                color: Color::WHITE,
-            },
-            Default::default(),
-        ),
-        ..default()
-    };
-
-    let deccel_text = TextBundle {
-        style: Style {
-            margin: Rect {
-                left: Val::Auto,
-                right: Val::Auto,
-                top: Val::Px(10.0),
-                bottom: Val::Px(10.0),
-            },
-            ..default()
-        },
-        text: Text::with_section(
-            "Deceleration: 0.0",
-            TextStyle {
-                font: asset_server.load("fonts/FiraSans-Regular.ttf"),
-                font_size: 24.0,
-                color: Color::WHITE,
-            },
-            Default::default(),
-        ),
-        ..default()
-    };
-
     // spawn the ui
     commands.spawn_bundle(container).with_children(|parent| {
         parent
@@ -204,10 +176,22 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                 parent
                     .spawn_bundle(content_container)
                     .with_children(|parent| {
-                        parent.spawn_bundle(content_text);
-                        parent.spawn_bundle(speed_text).insert(SpeedTextComponent);
-                        parent.spawn_bundle(accel_text).insert(AccelTextComponent);
-                        parent.spawn_bundle(deccel_text).insert(DecelTextComponent);
+                        parent.spawn_bundle(content_text).insert(StatWindowTitle);
+                        // speed
+                        parent.spawn_bundle(create_stat_text(&asset_server, "Speed"));
+                        create_ui_bar(parent, UIBar::from_type(BarStatType::Speed));
+                        // accel
+                        parent.spawn_bundle(create_stat_text(&asset_server, "Acceleration"));
+                        create_ui_bar(parent, UIBar::from_type(BarStatType::Acceleration));
+                        // decel
+                        parent.spawn_bundle(create_stat_text(&asset_server, "Deceleration"));
+                        create_ui_bar(parent, UIBar::from_type(BarStatType::Deceleration));
+                        // attack
+                        parent.spawn_bundle(create_stat_text(&asset_server, "Attack"));
+                        create_ui_bar(parent, UIBar::from_type(BarStatType::Attack));
+                        // decel
+                        parent.spawn_bundle(create_stat_text(&asset_server, "Health"));
+                        create_ui_bar(parent, UIBar::from_type(BarStatType::Health));
                     });
             })
             .insert(Animator::<Style>::default())
@@ -217,6 +201,7 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 pub fn display_stats_window(
     mut stats_window: ResMut<StatsWindow>,
+    mut q_title: Query<&mut Text, With<StatWindowTitle>>,
     mut q_anim: Query<&mut Animator<Style>, With<StatsWindowUI>>,
 ) {
     // get animator
@@ -249,5 +234,42 @@ pub fn display_stats_window(
                 end: CLOSED_POS,
             },
         ));
+    }
+
+    // change the title
+    for mut title in q_title.iter_mut() {
+        title.sections[0].value = (match stats_window.target_type {
+            EntityType::Animal => "Animal stats",
+            EntityType::Chimera => "Chimera stats",
+            _ => &title.sections[0].value,
+        })
+        .to_string();
+    }
+}
+
+fn create_stat_text(asset_server: &Res<AssetServer>, value: &str) -> TextBundle {
+    TextBundle {
+        style: Style {
+            margin: Rect {
+                left: Val::Auto,
+                right: Val::Auto,
+                top: Val::Px(10.0),
+                bottom: Val::Px(10.0),
+            },
+            ..default()
+        },
+        text: Text::with_section(
+            value,
+            TextStyle {
+                font: asset_server.load("fonts/FiraSans-Regular.ttf"),
+                font_size: 24.0,
+                color: Color::WHITE,
+            },
+            TextAlignment {
+                horizontal: HorizontalAlign::Left,
+                ..default()
+            },
+        ),
+        ..default()
     }
 }
