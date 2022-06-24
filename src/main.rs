@@ -9,6 +9,7 @@ mod camera;
 mod chimeras;
 mod constants;
 mod health;
+mod inventory_parts;
 mod player;
 mod stats_window;
 mod villagers;
@@ -25,6 +26,7 @@ fn main() {
         .add_plugin(camera::CameraPlugin)
         .add_plugin(animations::AnimationsPlugin)
         .add_plugin(stats_window::StatsWindowPlugin)
+        .add_plugin(inventory_parts::InventoryUIPlugin)
         .add_plugin(TweeningPlugin)
         .add_startup_system(setup_physics)
         .add_startup_system(setup_boundaries)
