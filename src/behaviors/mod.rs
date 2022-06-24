@@ -59,6 +59,10 @@ pub enum UnitBehavior {
     Pursue {
         target: Option<Vec2>,
     },
+    Follow {
+        target: Option<Vec2>,
+        distance: f32,
+    },
 }
 // Handle animal idling behavior
 pub fn idle_behavior(
@@ -136,6 +140,45 @@ pub fn pursue_behavior(
 
         vel.linvel.x += stats.accel * direction.x;
         vel.linvel.y += stats.accel * direction.y;
+
+        if vel.linvel.x.abs() > stats.speed * direction.x.abs() {
+            vel.linvel.x = stats.speed * direction.x;
+        }
+        if vel.linvel.y.abs() > stats.speed * direction.y.abs() {
+            vel.linvel.y = stats.speed * direction.y;
+        }
+
+        for sprite in sprites {
+            sprite.flip_x = direction.x < 0.0;
+        }
+    }
+}
+
+// Handle pursue behavior
+pub fn follow_behavior(
+    vel: &mut Velocity,
+    sprites: Vec<&mut Sprite>,
+    stats: UnitStats,
+    position: Vec2,
+    target: Option<Vec2>,
+    distance: f32,
+) {
+    if let Some(target) = target {
+        let direction = (target - position).normalize();
+
+        if position.distance(target) > distance {
+            vel.linvel.x += stats.accel * direction.x;
+            vel.linvel.y += stats.accel * direction.y;
+        } else if (vel.linvel.x.abs().powf(2.0) + vel.linvel.y.abs().powf(2.0)).sqrt()
+            - ROUND_ZERO_RANGE
+            < 0.0
+        {
+            vel.linvel.x = 0.0;
+            vel.linvel.y = 0.0;
+        } else {
+            vel.linvel.x -= stats.decel * direction.x;
+            vel.linvel.y -= stats.decel * direction.y;
+        }
 
         if vel.linvel.x.abs() > stats.speed * direction.x.abs() {
             vel.linvel.x = stats.speed * direction.x;

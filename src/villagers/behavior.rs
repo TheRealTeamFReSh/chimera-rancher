@@ -51,6 +51,7 @@ pub fn villager_behavior_system(
                         )),
                     }
                 }
+                UnitBehavior::Follow { target, distance } => todo!(),
             }
         }
     }

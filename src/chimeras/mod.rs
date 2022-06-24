@@ -135,12 +135,9 @@ pub fn spawn_chimera(
             angvel: 0.0,
         })
         .insert(ChimeraComponent {
-            behavior: UnitBehavior::Idle {
-                timer: Timer::from_seconds(2.0, false),
-                base_duration: 2.5,
-                duration_spread: 1.0,
-                direction: Vec2::default(),
-                is_moving: false,
+            behavior: UnitBehavior::Follow {
+                target: None,
+                distance: 100.0,
             },
             stats: ChimeraStats {
                 speed: head_attributes.speed + tail_attributes.speed,
