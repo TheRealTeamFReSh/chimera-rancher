@@ -1,21 +1,20 @@
 use bevy::{log, prelude::*};
 use bevy_tweening::{lens::UiPositionLens, Animator, EaseFunction, Tween, TweeningType};
 
-use crate::{chimeras::ChimeraComponent, constants::MaxStats, health::Health};
+use crate::{
+    animals::AnimalComponent,
+    chimeras::ChimeraComponent,
+    constants::{self, MaxStats},
+    health::Health,
+};
 
-use super::{ui_bars::*, StatsWindow};
+use super::{ui_bars::*, EntityType, StatsWindow};
 
 #[derive(Component)]
 pub struct StatsWindowUI;
 
 #[derive(Component)]
-pub struct SpeedBarComponent;
-
-#[derive(Component)]
-pub struct AccelBarComponent;
-
-#[derive(Component)]
-pub struct DecelBarComponent;
+pub struct StatWindowTitle;
 
 const CLOSED_POS: Rect<Val> = Rect {
     right: Val::Px(-350.),
@@ -32,9 +31,10 @@ const OPENED_POS: Rect<Val> = Rect {
 
 pub fn update_window_stats(
     // mut commands: Commands,
-    stats_window: Res<StatsWindow>,
+    mut stats_window: ResMut<StatsWindow>,
     maxi_stats: Res<MaxStats>,
     q_chimera: Query<(&Health, &ChimeraComponent)>,
+    q_animal: Query<(&Health, &AnimalComponent)>,
     q_ui_bar: Query<(&Children, &UIBar), (Without<MaxBarComponent>, Without<ValueBarComponent>)>,
     mut q_ui_bar_max: Query<
         (&Children, &mut Style),
@@ -44,17 +44,39 @@ pub fn update_window_stats(
 ) {
     if let Some(target_entity) = stats_window.target {
         // get the stats
-        let (health, chimera) = q_chimera.get(target_entity).unwrap();
-        let stats = chimera.stats;
+        let (health, accel, decel, attack, speed) =
+            if stats_window.target_type == EntityType::Chimera {
+                if let Ok((health, chimera)) = q_chimera.get(target_entity) {
+                    let stats = chimera.stats;
+                    (health, stats.accel, stats.decel, stats.attack, stats.speed)
+                } else {
+                    (&constants::DEFAULT_HEALTH, 0., 0., 0., 0.)
+                }
+            } else {
+                if let Ok((health, animal)) = q_animal.get(target_entity) {
+                    let stats = animal.stats;
+                    (health, stats.accel, stats.decel, stats.attack, stats.speed)
+                } else {
+                    (&constants::DEFAULT_HEALTH, 0., 0., 0., 0.)
+                }
+            };
+
+        // if the values are null, the entity does not exist anymore
+        if health.max_health == 0. && health.health == 0. {
+            stats_window.target = None;
+            stats_window.cursor = None;
+            stats_window.target_type = EntityType::None;
+            return;
+        }
 
         // for each bar
         for (children, bar) in q_ui_bar.iter() {
             // set value according to bartype
             let (max_value_possible, max_value, value) = match bar.bartype {
-                BarStatType::Acceleration => (maxi_stats.accel, stats.accel, stats.accel),
-                BarStatType::Deceleration => (maxi_stats.decel, stats.decel, stats.decel),
-                BarStatType::Speed => (maxi_stats.speed, stats.speed, stats.speed),
-                BarStatType::Attack => (maxi_stats.attack, stats.attack, stats.attack),
+                BarStatType::Acceleration => (maxi_stats.accel, accel, accel),
+                BarStatType::Deceleration => (maxi_stats.decel, decel, decel),
+                BarStatType::Speed => (maxi_stats.speed, speed, speed),
+                BarStatType::Attack => (maxi_stats.attack, attack, attack),
                 BarStatType::Health => (maxi_stats.health, health.max_health, health.health * 0.8),
             };
 
@@ -154,7 +176,7 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                 parent
                     .spawn_bundle(content_container)
                     .with_children(|parent| {
-                        parent.spawn_bundle(content_text);
+                        parent.spawn_bundle(content_text).insert(StatWindowTitle);
                         // speed
                         parent.spawn_bundle(create_stat_text(&asset_server, "Speed"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Speed));
@@ -179,6 +201,7 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 pub fn display_stats_window(
     mut stats_window: ResMut<StatsWindow>,
+    mut q_title: Query<&mut Text, With<StatWindowTitle>>,
     mut q_anim: Query<&mut Animator<Style>, With<StatsWindowUI>>,
 ) {
     // get animator
@@ -211,6 +234,16 @@ pub fn display_stats_window(
                 end: CLOSED_POS,
             },
         ));
+    }
+
+    // change the title
+    for mut title in q_title.iter_mut() {
+        title.sections[0].value = (match stats_window.target_type {
+            EntityType::Animal => "Animal stats",
+            EntityType::Chimera => "Chimera stats",
+            _ => &title.sections[0].value,
+        })
+        .to_string();
     }
 }
 

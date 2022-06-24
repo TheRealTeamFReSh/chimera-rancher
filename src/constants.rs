@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 
-use crate::animals::{AnimalAttributes, AnimalKind};
+use crate::{
+    animals::{AnimalAttributes, AnimalKind},
+    health::Health,
+};
 
 // stats splitting
 pub const HEAD_SPEED_PERCENT: f32 = 0.35;
@@ -27,6 +30,10 @@ pub const ANIMATION_OFFSET_FACTOR: f32 = 4.0;
 
 // stats
 pub const STATS_DEVIATION: f32 = 0.5;
+pub const DEFAULT_HEALTH: Health = Health {
+    health: 0.,
+    max_health: 0.,
+};
 
 // compute maximal values
 #[derive(Default)]
