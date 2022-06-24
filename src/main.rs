@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::TweeningPlugin;
+use states::GameStates;
 
 mod animals;
 mod animations;
@@ -10,12 +11,21 @@ mod chimeras;
 mod constants;
 mod health;
 mod inventory_parts;
+mod pause_menu;
 mod player;
+mod states;
 mod stats_window;
 mod villagers;
 
 fn main() {
     App::new()
+        .insert_resource(WindowDescriptor {
+            resizable: false,
+            height: 720.,
+            width: 1280.,
+            title: "Chimera Rancher - Rusty Jam #2".to_string(),
+            ..Default::default()
+        })
         .add_plugins(DefaultPlugins)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugin(RapierDebugRenderPlugin::default())
@@ -27,10 +37,15 @@ fn main() {
         .add_plugin(animations::AnimationsPlugin)
         .add_plugin(stats_window::StatsWindowPlugin)
         .add_plugin(inventory_parts::InventoryUIPlugin)
+        .add_plugin(pause_menu::PauseMenuPlugin)
         .add_plugin(TweeningPlugin)
-        .add_startup_system(setup_physics)
-        .add_startup_system(setup_boundaries)
-        .add_startup_system(setup_areas)
+        .add_state(GameStates::Game)
+        .add_system_set(
+            SystemSet::on_enter(GameStates::Game)
+                .with_system(setup_physics)
+                .with_system(setup_boundaries)
+                .with_system(setup_areas),
+        )
         .add_startup_system(constants::compute_max_stats)
         .run();
 }

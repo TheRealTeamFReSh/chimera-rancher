@@ -1,7 +1,9 @@
 use bevy::{log, prelude::*};
 use bevy_rapier2d::{plugin::RapierContext, prelude::InteractionGroups};
 
-use crate::{animals::AnimalComponent, camera::MainCamera, chimeras::ChimeraComponent};
+use crate::{
+    animals::AnimalComponent, camera::MainCamera, chimeras::ChimeraComponent, states::GameStates,
+};
 
 mod ui;
 mod ui_bars;
@@ -16,12 +18,20 @@ impl Plugin for StatsWindowPlugin {
             cursor: None,
             target_setup: false,
             opened: false,
-        })
-        .add_startup_system(ui::setup_ui)
-        .add_system(ui::update_window_stats)
-        .add_system(ui::display_stats_window)
-        .add_system(entity_click_detection)
-        .add_system(setup_stats_target);
+        });
+
+        // on enter
+        app.add_system_set(SystemSet::on_enter(GameStates::Game).with_system(ui::setup_ui));
+
+        // on update
+        app.add_system_set(
+            SystemSet::on_update(GameStates::Game)
+                .after("camera_setup")
+                .with_system(ui::update_window_stats)
+                .with_system(ui::display_stats_window)
+                .with_system(entity_click_detection)
+                .with_system(setup_stats_target),
+        );
     }
 }
 

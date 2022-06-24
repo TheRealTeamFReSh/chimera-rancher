@@ -6,6 +6,7 @@ use crate::{
     camera::CameraTarget,
     chimeras::{ChimeraPartAttributes, ChimeraPartKind},
     constants,
+    states::GameStates,
 };
 
 #[derive(Debug, Component)]
@@ -29,10 +30,16 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_player)
-            .add_system(animate_player)
-            .add_system(move_player)
-            .add_system(capture_animal);
+        // on enter
+        app.add_system_set(SystemSet::on_enter(GameStates::Game).with_system(spawn_player));
+
+        // on update
+        app.add_system_set(
+            SystemSet::on_update(GameStates::Game)
+                .with_system(animate_player)
+                .with_system(move_player)
+                .with_system(capture_animal),
+        );
     }
 }
 
