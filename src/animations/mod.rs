@@ -3,10 +3,20 @@ use std::f32::consts::PI;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::Velocity;
 
-use super::{AnimalComponent, AnimalSprite};
+use crate::chimeras::{ChimeraComponent, ChimeraSprite};
+
+use crate::animals::{AnimalComponent, AnimalSprite};
 
 const ANIMATION_SPEED_FACTOR: f32 = 0.2;
 const ANIMATION_OFFSET_FACTOR: f32 = 4.0;
+
+pub struct AnimationsPlugin;
+
+impl Plugin for AnimationsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system(bob_animation);
+    }
+}
 
 #[derive(Component)]
 pub struct BobbingAnim {
@@ -15,8 +25,8 @@ pub struct BobbingAnim {
 
 pub fn bob_animation(
     time: Res<Time>,
-    q_velocity: Query<&Velocity, With<AnimalComponent>>,
-    mut q_bobbing: Query<(&Parent, &mut Transform, &mut BobbingAnim), With<AnimalSprite>>,
+    q_velocity: Query<&Velocity, (Or<(With<AnimalComponent>, With<ChimeraComponent>)>)>,
+    mut q_bobbing: Query<(&Parent, &mut Transform, &mut BobbingAnim), With<Sprite>>,
 ) {
     for (parent, mut transform, mut animation) in q_bobbing.iter_mut() {
         // fetch velocity from parent

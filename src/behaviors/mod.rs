@@ -74,8 +74,9 @@ pub fn idle_behavior(
         *is_moving ^= true;
 
         if *is_moving {
+            let flip_val = direction.x < 0.0;
             for sprite in sprites {
-                sprite.flip_x = direction.x < 0.0;
+                sprite.flip_x = flip_val;
             }
         }
     }
