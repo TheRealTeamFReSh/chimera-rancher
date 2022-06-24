@@ -63,6 +63,10 @@ pub enum UnitBehavior {
         target: Option<Vec2>,
         distance: f32,
     },
+    RunAway {
+        target: Option<Vec2>,
+        distance: f32,
+    },
 }
 // Handle animal idling behavior
 pub fn idle_behavior(

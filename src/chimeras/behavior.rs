@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use super::{ChimeraComponent, ChimeraSprite};
+use crate::behaviors::UnitBehavior;
 use crate::player::Player;
 use crate::villagers::VillagerComponent;
 use crate::{behaviors, constants};
@@ -46,7 +47,7 @@ pub fn chimera_behavior_system(
         }
 
         match &mut chimera.behavior {
-            behaviors::UnitBehavior::Idle {
+            UnitBehavior::Idle {
                 timer,
                 base_duration,
                 duration_spread,
@@ -76,7 +77,7 @@ pub fn chimera_behavior_system(
                     }
                 }
             }
-            behaviors::UnitBehavior::Pursue { target } => {
+            UnitBehavior::Pursue { target } => {
                 behaviors::pursue_behavior(
                     &mut vel,
                     vec![&mut sprite_1, &mut sprite_2],
@@ -100,7 +101,7 @@ pub fn chimera_behavior_system(
                     }
                 }
             }
-            behaviors::UnitBehavior::Follow { target, distance } => {
+            UnitBehavior::Follow { target, distance } => {
                 behaviors::follow_behavior(
                     &mut vel,
                     vec![&mut sprite_1, &mut sprite_2],
@@ -131,6 +132,7 @@ pub fn chimera_behavior_system(
                     }
                 }
             }
+            UnitBehavior::RunAway { target, distance } => todo!(),
         }
     }
 }

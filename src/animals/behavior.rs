@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use super::{AnimalComponent, AnimalSprite};
-use crate::behaviors;
+use crate::behaviors::{self, UnitBehavior};
 
 // Handles animals behaving according to their current behavior
 pub fn animal_behavior_system(
@@ -14,7 +14,7 @@ pub fn animal_behavior_system(
         for mut sprite in sprite_query.iter_mut() {
             let stats = animal.stats;
             match &mut animal.behavior {
-                behaviors::UnitBehavior::Idle {
+                UnitBehavior::Idle {
                     timer,
                     base_duration,
                     duration_spread,
@@ -31,11 +31,12 @@ pub fn animal_behavior_system(
                     is_moving,
                     stats.into(),
                 ),
-                behaviors::UnitBehavior::Pursue { target: _ } => todo!(),
-                behaviors::UnitBehavior::Follow {
+                UnitBehavior::Pursue { target: _ } => todo!(),
+                UnitBehavior::Follow {
                     target: _,
                     distance: _,
                 } => todo!(),
+                UnitBehavior::RunAway { target, distance } => todo!(),
             }
         }
     }

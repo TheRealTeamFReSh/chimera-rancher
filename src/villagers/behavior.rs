@@ -55,6 +55,7 @@ pub fn villager_behavior_system(
                     target: _,
                     distance: _,
                 } => todo!(),
+                UnitBehavior::RunAway { target, distance } => todo!(),
             }
         }
     }
