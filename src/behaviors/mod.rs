@@ -56,6 +56,9 @@ pub enum UnitBehavior {
         direction: Vec2,
         is_moving: bool,
     },
+    Pursue {
+        target: Option<Vec2>,
+    },
 }
 // Handle animal idling behavior
 pub fn idle_behavior(
@@ -116,6 +119,33 @@ pub fn idle_behavior(
             vel.linvel.y -= stats.decel * direction.y.abs();
         } else {
             vel.linvel.y += stats.decel * direction.y.abs();
+        }
+    }
+}
+
+// Handle pursue behavior
+pub fn pursue_behavior(
+    vel: &mut Velocity,
+    sprites: Vec<&mut Sprite>,
+    stats: UnitStats,
+    position: Vec2,
+    target: Option<Vec2>,
+) {
+    if let Some(target) = target {
+        let direction = (target - position).normalize();
+
+        vel.linvel.x += stats.accel * direction.x;
+        vel.linvel.y += stats.accel * direction.y;
+
+        if vel.linvel.x.abs() > stats.speed * direction.x.abs() {
+            vel.linvel.x = stats.speed * direction.x;
+        }
+        if vel.linvel.y.abs() > stats.speed * direction.y.abs() {
+            vel.linvel.y = stats.speed * direction.y;
+        }
+
+        for sprite in sprites {
+            sprite.flip_x = direction.x < 0.0;
         }
     }
 }

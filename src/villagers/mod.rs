@@ -6,6 +6,7 @@ mod behavior;
 
 use crate::animations::BobbingAnim;
 use crate::behaviors::UnitBehavior;
+const STATS_DEVIATION: f32 = 0.2;
 
 pub struct VillagersPlugin;
 
@@ -47,17 +48,15 @@ pub fn spawn_villager(position: Vec2, commands: &mut Commands, asset_server: &As
         )))
         .insert(Velocity::default())
         .insert(VillagerComponent {
-            behavior: UnitBehavior::Idle {
-                timer: Timer::from_seconds(2.0, false),
-                base_duration: 6.0,
-                duration_spread: 2.0,
-                direction: Vec2::default(),
-                is_moving: false,
-            },
+            behavior: UnitBehavior::Pursue { target: None },
             stats: VillagerStats {
-                speed: 50.0,
-                accel: 3.0,
-                decel: 6.0,
+                //speed: attributes.speed,
+                speed: rand::thread_rng()
+                    .gen_range(100.0 * STATS_DEVIATION..100.0 * (1.0 + STATS_DEVIATION)),
+                accel: rand::thread_rng()
+                    .gen_range(2.0 * STATS_DEVIATION..2.0 * (1.0 + STATS_DEVIATION)),
+                decel: rand::thread_rng()
+                    .gen_range(6.0 * STATS_DEVIATION..6.0 * (1.0 + STATS_DEVIATION)),
                 damage: 5.0,
             },
         })
@@ -67,7 +66,9 @@ pub fn spawn_villager(position: Vec2, commands: &mut Commands, asset_server: &As
         .with_children(|parent| {
             parent
                 .spawn_bundle(SpriteBundle {
-                    texture: asset_server.load("villager_1.png"),
+                    texture: asset_server.load(
+                        format!("villager_{}.png", rand::thread_rng().gen_range(1..=3)).as_str(),
+                    ),
                     ..default()
                 })
                 .insert(VillagerSprite)
