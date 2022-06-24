@@ -7,8 +7,10 @@ mod animations;
 mod behaviors;
 mod camera;
 mod chimeras;
+mod health;
 mod player;
 mod stats_window;
+mod villagers;
 
 fn main() {
     App::new()
@@ -17,6 +19,7 @@ fn main() {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(animals::AnimalsPlugin)
         .add_plugin(chimeras::ChimerasPlugin)
+        .add_plugin(villagers::VillagersPlugin)
         .add_plugin(player::PlayerPlugin)
         .add_plugin(camera::CameraPlugin)
         .add_plugin(animations::AnimationsPlugin)

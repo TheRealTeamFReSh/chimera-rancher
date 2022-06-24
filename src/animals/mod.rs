@@ -5,8 +5,8 @@ use rand_distr::{Distribution, UnitCircle};
 use std::collections::HashMap;
 
 use crate::animations::BobbingAnim;
-
 use crate::behaviors::UnitBehavior;
+use crate::health::Health;
 
 mod behavior;
 
@@ -23,6 +23,8 @@ impl Plugin for AnimalsPlugin {
                 speed: 60.0,
                 accel: 1.5,
                 decel: 6.0,
+                health: 120.0,
+                attack: 10.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "pig.png".to_string(),
                 head_texture: "pighead.png".to_string(),
@@ -42,6 +44,8 @@ impl Plugin for AnimalsPlugin {
                 speed: 50.0,
                 accel: 1.75,
                 decel: 6.0,
+                attack: 8.0,
+                health: 150.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "cow.png".to_string(),
                 head_texture: "cowhead.png".to_string(),
@@ -61,6 +65,8 @@ impl Plugin for AnimalsPlugin {
                 speed: 80.0,
                 accel: 2.2,
                 decel: 6.0,
+                attack: 15.0,
+                health: 100.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "dog.png".to_string(),
                 head_texture: "doghead.png".to_string(),
@@ -80,6 +86,8 @@ impl Plugin for AnimalsPlugin {
                 speed: 70.0,
                 accel: 2.0,
                 decel: 6.0,
+                health: 75.0,
+                attack: 18.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "chicken.png".to_string(),
                 head_texture: "chickenhead.png".to_string(),
@@ -99,6 +107,8 @@ impl Plugin for AnimalsPlugin {
                 speed: 100.0,
                 accel: 3.0,
                 decel: 6.0,
+                health: 140.0,
+                attack: 12.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "horse.png".to_string(),
                 head_texture: "horsehead.png".to_string(),
@@ -145,12 +155,16 @@ pub struct AnimalStats {
     pub accel: f32,
     pub decel: f32,
     pub kind: AnimalKind,
+    pub health: f32,
+    pub attack: f32,
 }
 
 pub struct AnimalAttributes {
     pub speed: f32,
     pub accel: f32,
     pub decel: f32,
+    pub attack: f32,
+    pub health: f32,
     pub collider_size: Vec2,
     pub texture: String,
     pub head_texture: String,
@@ -222,6 +236,10 @@ pub fn spawn_animal(
     random_direction.x = dir[0];
     random_direction.y = dir[1];
 
+    let animal_health = rand::thread_rng().gen_range(
+        attributes.health * (1.0 - STATS_DEVIATION)..attributes.health * (1.0 + STATS_DEVIATION),
+    );
+
     commands
         .spawn_bundle(TransformBundle::from(Transform::from_translation(
             position.extend(0.0),
@@ -233,19 +251,27 @@ pub fn spawn_animal(
         .insert(AnimalComponent {
             behavior: attributes.behavior.clone(),
             stats: AnimalStats {
-                //speed: attributes.speed,
+                attack: rand::thread_rng().gen_range(
+                    attributes.attack * (1.0 - STATS_DEVIATION)
+                        ..attributes.attack * (1.0 + STATS_DEVIATION),
+                ),
                 speed: rand::thread_rng().gen_range(
-                    attributes.speed * STATS_DEVIATION..attributes.speed * (1.0 + STATS_DEVIATION),
+                    attributes.speed * (1.0 - STATS_DEVIATION)
+                        ..attributes.speed * (1.0 + STATS_DEVIATION),
                 ),
                 accel: rand::thread_rng().gen_range(
-                    attributes.accel * STATS_DEVIATION..attributes.accel * (1.0 + STATS_DEVIATION),
+                    attributes.accel * (1.0 - STATS_DEVIATION)
+                        ..attributes.accel * (1.0 + STATS_DEVIATION),
                 ),
                 decel: rand::thread_rng().gen_range(
-                    attributes.decel * STATS_DEVIATION..attributes.decel * (1.0 + STATS_DEVIATION),
+                    attributes.decel * (1.0 - STATS_DEVIATION)
+                        ..attributes.decel * (1.0 + STATS_DEVIATION),
                 ),
+                health: animal_health,
                 kind: *animal_kind,
             },
         })
+        .insert(Health::new(animal_health))
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(
             attributes.collider_size.x,

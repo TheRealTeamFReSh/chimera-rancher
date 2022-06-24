@@ -31,6 +31,8 @@ pub fn animal_behavior_system(
                     is_moving,
                     stats.into(),
                 ),
+                behaviors::UnitBehavior::Pursue { target } => todo!(),
+                behaviors::UnitBehavior::Follow { target, distance } => todo!(),
             }
         }
     }

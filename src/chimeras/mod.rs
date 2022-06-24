@@ -4,11 +4,18 @@ use rand::prelude::SliceRandom;
 use rand::Rng;
 
 use self::behavior::chimera_behavior_system;
-pub use self::chimera_part::ChimeraPartKind;
-use crate::{animations::BobbingAnim, behaviors::UnitBehavior, player::Player};
+use crate::{
+    animals::AnimalKind, animations::BobbingAnim, behaviors::UnitBehavior, health::Health,
+    player::Player,
+};
 
 mod behavior;
-mod chimera_part;
+
+#[derive(Hash, PartialEq, Eq, Debug, Clone)]
+pub enum ChimeraPartKind {
+    Head(AnimalKind),
+    Tail(AnimalKind),
+}
 
 #[derive(Component)]
 pub struct ChimeraComponent {
@@ -21,6 +28,8 @@ pub struct ChimeraStats {
     pub speed: f32,
     pub accel: f32,
     pub decel: f32,
+    pub health: f32,
+    pub attack: f32,
 }
 
 // used for passing data from animals to chimeras
@@ -29,6 +38,8 @@ pub struct ChimeraPartAttributes {
     pub speed: f32,
     pub accel: f32,
     pub decel: f32,
+    pub health: f32,
+    pub attack: f32,
     pub collider_size: Vec2,
     pub texture: String,
     pub kind: ChimeraPartKind,
@@ -124,6 +135,8 @@ pub fn spawn_chimera(
         tail_attributes = temp;
     }
 
+    let chimera_health = head_attributes.health + tail_attributes.health;
+
     // spawn the chimera
     commands
         .spawn()
@@ -135,19 +148,19 @@ pub fn spawn_chimera(
             angvel: 0.0,
         })
         .insert(ChimeraComponent {
-            behavior: UnitBehavior::Idle {
-                timer: Timer::from_seconds(2.0, false),
-                base_duration: 2.5,
-                duration_spread: 1.0,
-                direction: Vec2::default(),
-                is_moving: false,
+            behavior: UnitBehavior::Follow {
+                target: None,
+                distance: 100.0,
             },
             stats: ChimeraStats {
+                attack: head_attributes.attack + tail_attributes.attack,
                 speed: head_attributes.speed + tail_attributes.speed,
                 accel: head_attributes.accel + tail_attributes.accel,
                 decel: head_attributes.decel + tail_attributes.decel,
+                health: chimera_health,
             },
         })
+        .insert(Health::new(chimera_health))
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(
             head_attributes.collider_size.x / 2.0 + tail_attributes.collider_size.x / 2.0,
