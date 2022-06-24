@@ -77,7 +77,7 @@ pub fn update_window_stats(
                 BarStatType::Deceleration => (maxi_stats.decel, decel, decel),
                 BarStatType::Speed => (maxi_stats.speed, speed, speed),
                 BarStatType::Attack => (maxi_stats.attack, attack, attack),
-                BarStatType::Health => (maxi_stats.health, health.max_health, health.health * 0.8),
+                BarStatType::Health => (maxi_stats.health, health.max_health, health.health),
             };
 
             // getting max_value
