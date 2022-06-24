@@ -1,12 +1,16 @@
 use bevy::{prelude::*, ui::widget::ImageMode};
 
-use crate::{chimeras::ChimeraPartKind, player::Player};
+use crate::{chimeras::ChimeraPartKind, player::Player, states::GameStates};
 
 pub struct InventoryUIPlugin;
 
 impl Plugin for InventoryUIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_ui).add_system(update_ui);
+        // on enter
+        app.add_system_set(SystemSet::on_enter(GameStates::Game).with_system(setup_ui));
+
+        // on update
+        app.add_system_set(SystemSet::on_update(GameStates::Game).with_system(update_ui));
     }
 }
 

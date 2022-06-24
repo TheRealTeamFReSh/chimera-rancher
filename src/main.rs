@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::TweeningPlugin;
+use states::GameStates;
 
 mod animals;
 mod animations;
@@ -38,11 +39,14 @@ fn main() {
         .add_plugin(inventory_parts::InventoryUIPlugin)
         .add_plugin(pause_menu::PauseMenuPlugin)
         .add_plugin(TweeningPlugin)
-        .add_startup_system(setup_physics)
-        .add_startup_system(setup_boundaries)
-        .add_startup_system(setup_areas)
+        .add_state(GameStates::Game)
+        .add_system_set(
+            SystemSet::on_enter(GameStates::Game)
+                .with_system(setup_physics)
+                .with_system(setup_boundaries)
+                .with_system(setup_areas),
+        )
         .add_startup_system(constants::compute_max_stats)
-        .add_state(states::GameStates::Game)
         .run();
 }
 

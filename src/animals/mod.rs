@@ -8,6 +8,7 @@ use crate::animations::BobbingAnim;
 use crate::behaviors::UnitBehavior;
 use crate::constants;
 use crate::health::Health;
+use crate::states::GameStates;
 
 mod behavior;
 
@@ -122,9 +123,12 @@ impl Plugin for AnimalsPlugin {
             },
         );
 
-        app.insert_resource(animal_attr_res)
-            .add_startup_system(spawn_test_system)
-            .add_system(behavior::animal_behavior_system);
+        app.insert_resource(animal_attr_res);
+
+        app.add_system_set(SystemSet::on_enter(GameStates::Game).with_system(spawn_test_system));
+        app.add_system_set(
+            SystemSet::on_update(GameStates::Game).with_system(behavior::animal_behavior_system),
+        );
     }
 }
 

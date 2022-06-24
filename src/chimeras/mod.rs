@@ -6,7 +6,7 @@ use rand::Rng;
 use self::behavior::chimera_behavior_system;
 use crate::{
     animals::AnimalKind, animations::BobbingAnim, behaviors::UnitBehavior, health::Health,
-    player::Player,
+    player::Player, states::GameStates,
 };
 
 mod behavior;
@@ -52,8 +52,12 @@ pub struct ChimerasPlugin;
 
 impl Plugin for ChimerasPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(test_spawn_chimera_system)
-            .add_system(chimera_behavior_system);
+        // on update
+        app.add_system_set(
+            SystemSet::on_update(GameStates::Game)
+                .with_system(test_spawn_chimera_system)
+                .with_system(chimera_behavior_system),
+        );
     }
 }
 
