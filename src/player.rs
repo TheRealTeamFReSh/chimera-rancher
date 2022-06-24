@@ -13,6 +13,10 @@ pub const HEAD_ACCEL_PERCENT: f32 = 0.35;
 pub const TAIL_ACCEL_PERCENT: f32 = 0.65;
 pub const HEAD_DECEL_PERCENT: f32 = 0.35;
 pub const TAIL_DECEL_PERCENT: f32 = 0.65;
+pub const HEAD_HEALTH_PERCENT: f32 = 0.50;
+pub const TAIL_HEALTH_PERCENT: f32 = 0.50;
+pub const HEAD_ATTACK_PERCENT: f32 = 0.7;
+pub const TAIL_ATTACK_PERCENT: f32 = 0.3;
 
 #[derive(Debug, Component)]
 pub struct Player {
@@ -167,6 +171,8 @@ fn capture_animal(
                     let animal_stats = animal.stats;
                     let animal_attr = &animal_attr_res[&animal_stats.kind];
                     let chimera_attr_head = ChimeraPartAttributes {
+                        attack: animal_stats.health * HEAD_ATTACK_PERCENT,
+                        health: animal_stats.health * HEAD_HEALTH_PERCENT,
                         speed: animal_stats.speed * HEAD_SPEED_PERCENT,
                         accel: animal_stats.accel * HEAD_ACCEL_PERCENT,
                         decel: animal_stats.decel * HEAD_DECEL_PERCENT,
@@ -175,6 +181,8 @@ fn capture_animal(
                         kind: ChimeraPartKind::Head(animal_stats.kind),
                     };
                     let chimera_attr_tail = ChimeraPartAttributes {
+                        attack: animal_stats.health * TAIL_ATTACK_PERCENT,
+                        health: animal_stats.health * TAIL_HEALTH_PERCENT,
                         speed: animal_stats.speed * TAIL_SPEED_PERCENT,
                         accel: animal_stats.accel * TAIL_ACCEL_PERCENT,
                         decel: animal_stats.decel * TAIL_DECEL_PERCENT,

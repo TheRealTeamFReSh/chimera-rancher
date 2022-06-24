@@ -7,6 +7,7 @@ mod animations;
 mod behaviors;
 mod camera;
 mod chimeras;
+mod health;
 mod player;
 mod stats_window;
 mod villagers;

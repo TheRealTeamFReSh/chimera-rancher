@@ -6,6 +6,7 @@ mod behavior;
 
 use crate::animations::BobbingAnim;
 use crate::behaviors::UnitBehavior;
+use crate::health::Health;
 const STATS_DEVIATION: f32 = 0.2;
 
 pub struct VillagersPlugin;
@@ -19,6 +20,8 @@ impl Plugin for VillagersPlugin {
 
 #[derive(Clone, Copy, Debug)]
 pub struct VillagerStats {
+    pub attack: f32,
+    pub health: f32,
     pub speed: f32,
     pub accel: f32,
     pub decel: f32,
@@ -42,6 +45,9 @@ fn spawn_test_villager_system(mut commands: Commands, asset_server: Res<AssetSer
 }
 
 pub fn spawn_villager(position: Vec2, commands: &mut Commands, asset_server: &AssetServer) {
+    let villager_health = rand::thread_rng()
+        .gen_range(120.0 * (1.0 - STATS_DEVIATION)..120.0 * (1.0 + STATS_DEVIATION));
+
     commands
         .spawn_bundle(TransformBundle::from(Transform::from_translation(
             position.extend(0.0),
@@ -50,16 +56,19 @@ pub fn spawn_villager(position: Vec2, commands: &mut Commands, asset_server: &As
         .insert(VillagerComponent {
             behavior: UnitBehavior::Pursue { target: None },
             stats: VillagerStats {
-                //speed: attributes.speed,
+                health: villager_health,
+                attack: rand::thread_rng()
+                    .gen_range(10.0 * (1.0 - STATS_DEVIATION)..100.0 * (1.0 + STATS_DEVIATION)),
                 speed: rand::thread_rng()
-                    .gen_range(100.0 * STATS_DEVIATION..100.0 * (1.0 + STATS_DEVIATION)),
+                    .gen_range(100.0 * (1.0 - STATS_DEVIATION)..100.0 * (1.0 + STATS_DEVIATION)),
                 accel: rand::thread_rng()
-                    .gen_range(2.0 * STATS_DEVIATION..2.0 * (1.0 + STATS_DEVIATION)),
+                    .gen_range(2.0 * (1.0 - STATS_DEVIATION)..2.0 * (1.0 + STATS_DEVIATION)),
                 decel: rand::thread_rng()
-                    .gen_range(6.0 * STATS_DEVIATION..6.0 * (1.0 + STATS_DEVIATION)),
+                    .gen_range(6.0 * (1.0 - STATS_DEVIATION)..6.0 * (1.0 + STATS_DEVIATION)),
                 damage: 5.0,
             },
         })
+        .insert(Health::new(villager_health))
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(10.0, 15.0))
         .insert(LockedAxes::ROTATION_LOCKED)
