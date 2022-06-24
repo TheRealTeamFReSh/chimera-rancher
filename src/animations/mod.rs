@@ -6,6 +6,7 @@ use bevy_rapier2d::prelude::Velocity;
 use crate::chimeras::{ChimeraComponent, ChimeraSprite};
 
 use crate::animals::{AnimalComponent, AnimalSprite};
+use crate::villagers::{VillagerComponent, VillagerSprite};
 
 const ANIMATION_SPEED_FACTOR: f32 = 0.2;
 const ANIMATION_OFFSET_FACTOR: f32 = 4.0;
@@ -25,7 +26,14 @@ pub struct BobbingAnim {
 
 pub fn bob_animation(
     time: Res<Time>,
-    q_velocity: Query<&Velocity, (Or<(With<AnimalComponent>, With<ChimeraComponent>)>)>,
+    q_velocity: Query<
+        &Velocity,
+        (Or<(
+            With<AnimalComponent>,
+            With<ChimeraComponent>,
+            With<VillagerComponent>,
+        )>),
+    >,
     mut q_bobbing: Query<(&Parent, &mut Transform, &mut BobbingAnim), With<Sprite>>,
 ) {
     for (parent, mut transform, mut animation) in q_bobbing.iter_mut() {

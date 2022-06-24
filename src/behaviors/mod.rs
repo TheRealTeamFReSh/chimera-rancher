@@ -6,6 +6,7 @@ use std::time::Duration;
 
 use crate::animals::AnimalStats;
 use crate::chimeras::ChimeraStats;
+use crate::villagers::VillagerStats;
 
 const ROUND_ZERO_RANGE: f32 = 10.0;
 
@@ -27,6 +28,16 @@ impl From<AnimalStats> for UnitStats {
 
 impl From<ChimeraStats> for UnitStats {
     fn from(stats: ChimeraStats) -> Self {
+        Self {
+            speed: stats.speed,
+            accel: stats.accel,
+            decel: stats.decel,
+        }
+    }
+}
+
+impl From<VillagerStats> for UnitStats {
+    fn from(stats: VillagerStats) -> Self {
         Self {
             speed: stats.speed,
             accel: stats.accel,
