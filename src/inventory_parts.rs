@@ -24,6 +24,24 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     };
 
+    let hotbar = ImageBundle {
+        image: asset_server.load("hotbar.png").into(),
+        image_mode: ImageMode::KeepAspect,
+        style: Style {
+            position_type: PositionType::Absolute,
+            position: Rect {
+                left: Val::Px(5.0),
+                right: Val::Auto,
+                top: Val::Auto,
+                bottom: Val::Px(5.0),
+            },
+            size: Size::new(Val::Auto, Val::Px(64.)),
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    commands.spawn_bundle(hotbar);
     commands
         .spawn_bundle(root)
         .with_children(|parent| {
@@ -35,6 +53,8 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(PartInventoryContainer);
 }
 
+// TODO: if the inventory size is fixed, spawn N cells then change the texture
+// visibility instead of despawning
 fn update_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -69,9 +89,15 @@ fn create_item_icon(
             style: Style {
                 size: Size::new(Val::Px(48.), Val::Px(48.)),
                 overflow: Overflow::Hidden,
-                margin: Rect::all(Val::Px(5.)),
+                margin: Rect {
+                    left: Val::Px(6.),
+                    right: Val::Px(10.),
+                    top: Val::Px(5.),
+                    bottom: Val::Px(8.5),
+                },
                 ..default()
             },
+            // color: Color::RED.into(),
             color: Color::rgba_u8(10, 10, 10, 50).into(),
             ..default()
         })
