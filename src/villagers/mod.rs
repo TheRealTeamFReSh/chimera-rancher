@@ -38,10 +38,10 @@ pub struct VillagerComponent {
 pub struct VillagerSprite;
 
 fn spawn_test_villager_system(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
-    // spawn_villager(Vec2::new(30.0, 500.0), &mut commands, &asset_server);
-    // spawn_villager(Vec2::new(20.0, 400.0), &mut commands, &asset_server);
-    // spawn_villager(Vec2::new(-50.0, 350.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(30.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(20.0, 400.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(-50.0, 350.0), &mut commands, &asset_server);
 }
 
 pub fn spawn_villager(position: Vec2, commands: &mut Commands, asset_server: &AssetServer) {

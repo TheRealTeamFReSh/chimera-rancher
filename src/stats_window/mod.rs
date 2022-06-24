@@ -4,6 +4,7 @@ use bevy_rapier2d::{plugin::RapierContext, prelude::InteractionGroups};
 use crate::{camera::MainCamera, chimeras::ChimeraComponent};
 
 mod ui;
+mod ui_bars;
 
 pub struct StatsWindowPlugin;
 
@@ -120,6 +121,12 @@ fn entity_click_detection(
                 // get the chimera component
                 if let Ok(chi_compo) = q_chimera.get(entity) {
                     let stats = chi_compo.stats;
+                    log::debug!(
+                        "The entity {:?} contains the point with stats: {:?}",
+                        entity,
+                        stats
+                    );
+
                     stats_window.target = Some(entity);
                     stats_window.target_setup = false;
                 }
