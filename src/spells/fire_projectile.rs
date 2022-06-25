@@ -16,7 +16,7 @@ pub fn fire_projectile_system(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     time: Res<Time>,
 ) {
-    if let Some((player_transform, player)) = player_q.iter_mut().next() {
+    if let Some((player_transform, mut player)) = player_q.iter_mut().next() {
         let curr_window = windows.get_primary().unwrap();
         if mouse_button.just_pressed(MouseButton::Left)
             && matches!(player.active_spell, SpellKind::FireProjectile)
