@@ -51,19 +51,35 @@ pub fn update_window_stats(
             regen_timer: Timer::from_seconds(0.0, false),
         };
         // get the stats
-        let (health, accel, decel, attack, speed) =
+        let (health, accel, decel, attack, speed, regen, range) =
             if stats_window.target_type == EntityType::Chimera {
                 if let Ok((health, chimera)) = q_chimera.get(target_entity) {
                     let stats = chimera.stats;
-                    (health, stats.accel, stats.decel, stats.attack, stats.speed)
+                    (
+                        health,
+                        stats.accel,
+                        stats.decel,
+                        stats.attack,
+                        stats.speed,
+                        stats.regen,
+                        stats.range,
+                    )
                 } else {
-                    (&zero_health, 0., 0., 0., 0.)
+                    (&zero_health, 0., 0., 0., 0., 0., 0.)
                 }
             } else if let Ok((health, animal)) = q_animal.get(target_entity) {
                 let stats = animal.stats;
-                (health, stats.accel, stats.decel, stats.attack, stats.speed)
+                (
+                    health,
+                    stats.accel,
+                    stats.decel,
+                    stats.attack,
+                    stats.speed,
+                    stats.regen,
+                    stats.range,
+                )
             } else {
-                (&zero_health, 0., 0., 0., 0.)
+                (&zero_health, 0., 0., 0., 0., 0., 0.)
             };
 
         // if the values are null, the entity does not exist anymore
@@ -83,6 +99,8 @@ pub fn update_window_stats(
                 BarStatType::Speed => (maxi_stats.speed, speed, speed),
                 BarStatType::Attack => (maxi_stats.attack, attack, attack),
                 BarStatType::Health => (maxi_stats.health, health.max_health, health.health),
+                BarStatType::Regen => (maxi_stats.regen, regen, regen),
+                BarStatType::Range => (maxi_stats.range, range, range),
             };
 
             // getting max_value
@@ -131,7 +149,7 @@ pub fn setup_ui(mut commands: Commands, assets: Res<AssetsManager>) {
     let border = NodeBundle {
         style: Style {
             position: CLOSED_POS,
-            size: Size::new(Val::Px(300.0), Val::Px(450.0)),
+            size: Size::new(Val::Px(300.0), Val::Px(550.0)),
             border: Rect::all(Val::Px(2.0)),
             ..default()
         },
@@ -183,6 +201,9 @@ pub fn setup_ui(mut commands: Commands, assets: Res<AssetsManager>) {
                     .spawn_bundle(content_container)
                     .with_children(|parent| {
                         parent.spawn_bundle(content_text).insert(StatWindowTitle);
+                        // health
+                        parent.spawn_bundle(create_stat_text(&assets, "Health"));
+                        create_ui_bar(parent, UIBar::from_type(BarStatType::Health));
                         // speed
                         parent.spawn_bundle(create_stat_text(&assets, "Speed"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Speed));
@@ -195,9 +216,12 @@ pub fn setup_ui(mut commands: Commands, assets: Res<AssetsManager>) {
                         // attack
                         parent.spawn_bundle(create_stat_text(&assets, "Attack"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Attack));
-                        // decel
-                        parent.spawn_bundle(create_stat_text(&assets, "Health"));
-                        create_ui_bar(parent, UIBar::from_type(BarStatType::Health));
+                        // regen
+                        parent.spawn_bundle(create_stat_text(&assets, "Regeneration"));
+                        create_ui_bar(parent, UIBar::from_type(BarStatType::Regen));
+                        // range
+                        parent.spawn_bundle(create_stat_text(&assets, "Range"));
+                        create_ui_bar(parent, UIBar::from_type(BarStatType::Range));
                     });
             })
             .insert(Animator::<Style>::default())
