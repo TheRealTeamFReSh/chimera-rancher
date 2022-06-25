@@ -260,7 +260,7 @@ pub fn spawn_animal(
 
     commands
         .spawn_bundle(TransformBundle::from(Transform::from_translation(
-            position.extend(0.0),
+            position.extend(1.0),
         )))
         .insert(Velocity {
             linvel: Vec2::new(0.0, 0.0),

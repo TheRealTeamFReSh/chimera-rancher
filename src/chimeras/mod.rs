@@ -156,7 +156,7 @@ pub fn spawn_chimera(
     commands
         .spawn()
         .insert_bundle(TransformBundle::from(Transform::from_translation(
-            position.extend(0.0),
+            position.extend(10.0),
         )))
         .insert(Velocity {
             linvel: Vec2::new(0.0, 0.0),
