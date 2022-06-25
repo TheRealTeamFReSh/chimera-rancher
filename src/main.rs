@@ -15,6 +15,7 @@ mod day_cycle;
 mod gameover;
 mod health;
 mod helpers;
+mod houses;
 mod hud;
 mod inventory_parts;
 mod main_menu;
@@ -59,6 +60,7 @@ fn main() {
         .add_plugin(gameover::GameOverPlugin)
         .add_plugin(hud::HudPlugin)
         .add_plugin(TweeningPlugin)
+        .add_plugin(houses::HousesPlugin)
         .add_plugin(projectile::ProjectilePlugin)
         .add_state(GameStates::AssetsLoading)
         .add_system_set(
