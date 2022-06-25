@@ -7,7 +7,7 @@ use crate::{
 };
 
 mod ui;
-mod ui_bars;
+pub mod ui_bars;
 
 pub struct StatsWindowPlugin;
 
