@@ -1,16 +1,18 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
-use rand_distr::{Distribution, UnitCircle};
+use rand_distr::{Distribution, Standard, UnitCircle};
 use std::collections::HashMap;
 
 use crate::animations::BobbingAnim;
 use crate::behaviors::UnitBehavior;
-use crate::constants;
+use crate::constants::{self, ANIMAL_STATS_DEVIATION as STATS_DEVIATION};
 use crate::health::Health;
 use crate::states::GameStates;
 
 mod behavior;
+mod spawn;
+pub use self::spawn::AnimalSpawner;
 
 pub struct AnimalsPlugin;
 
@@ -98,11 +100,16 @@ impl Plugin for AnimalsPlugin {
             },
         );
 
-        app.insert_resource(animal_attr_res);
+        app.insert_resource(animal_attr_res)
+            .insert_resource(spawn::AnimalSpawner {
+                spawn_timer: Timer::from_seconds(constants::ANIMAL_BASE_SPAWN_DURATION, false),
+            });
 
         app.add_system_set(SystemSet::on_enter(GameStates::Game).with_system(spawn_test_system));
         app.add_system_set(
-            SystemSet::on_update(GameStates::Game).with_system(behavior::animal_behavior_system),
+            SystemSet::on_update(GameStates::Game)
+                .with_system(behavior::animal_behavior_system)
+                .with_system(spawn::spawn_animals_system),
         );
     }
 }
@@ -114,6 +121,18 @@ pub enum AnimalKind {
     Dog,
     Horse,
     Chicken,
+}
+
+impl Distribution<AnimalKind> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> AnimalKind {
+        match rng.gen_range(0..5) {
+            0 => AnimalKind::Pig,
+            1 => AnimalKind::Cow,
+            2 => AnimalKind::Dog,
+            3 => AnimalKind::Horse,
+            _ => AnimalKind::Chicken,
+        }
+    }
 }
 
 // Core component of animal
@@ -234,13 +253,11 @@ pub fn spawn_animal(
     random_direction.y = dir[1];
 
     let animal_health = rand::thread_rng().gen_range(
-        attributes.health * (1.0 - constants::STATS_DEVIATION)
-            ..attributes.health * (1.0 + constants::STATS_DEVIATION),
+        attributes.health * (1.0 - STATS_DEVIATION)..attributes.health * (1.0 + STATS_DEVIATION),
     );
 
     let animal_regen = rand::thread_rng().gen_range(
-        attributes.regen * (1.0 - constants::STATS_DEVIATION)
-            ..attributes.regen * (1.0 + constants::STATS_DEVIATION),
+        attributes.regen * (1.0 - STATS_DEVIATION)..attributes.regen * (1.0 + STATS_DEVIATION),
     );
 
     commands
@@ -261,24 +278,24 @@ pub fn spawn_animal(
             },
             stats: AnimalStats {
                 attack: rand::thread_rng().gen_range(
-                    attributes.attack * (1.0 - constants::STATS_DEVIATION)
-                        ..attributes.attack * (1.0 + constants::STATS_DEVIATION),
+                    attributes.attack * (1.0 - STATS_DEVIATION)
+                        ..attributes.attack * (1.0 + STATS_DEVIATION),
                 ),
                 range: rand::thread_rng().gen_range(
-                    attributes.range * (1.0 - constants::STATS_DEVIATION)
-                        ..attributes.range * (1.0 + constants::STATS_DEVIATION),
+                    attributes.range * (1.0 - STATS_DEVIATION)
+                        ..attributes.range * (1.0 + STATS_DEVIATION),
                 ),
                 speed: rand::thread_rng().gen_range(
-                    attributes.speed * (1.0 - constants::STATS_DEVIATION)
-                        ..attributes.speed * (1.0 + constants::STATS_DEVIATION),
+                    attributes.speed * (1.0 - STATS_DEVIATION)
+                        ..attributes.speed * (1.0 + STATS_DEVIATION),
                 ),
                 accel: rand::thread_rng().gen_range(
-                    attributes.accel * (1.0 - constants::STATS_DEVIATION)
-                        ..attributes.accel * (1.0 + constants::STATS_DEVIATION),
+                    attributes.accel * (1.0 - STATS_DEVIATION)
+                        ..attributes.accel * (1.0 + STATS_DEVIATION),
                 ),
                 decel: rand::thread_rng().gen_range(
-                    attributes.decel * (1.0 - constants::STATS_DEVIATION)
-                        ..attributes.decel * (1.0 + constants::STATS_DEVIATION),
+                    attributes.decel * (1.0 - STATS_DEVIATION)
+                        ..attributes.decel * (1.0 + STATS_DEVIATION),
                 ),
                 health: animal_health,
                 regen: animal_regen,

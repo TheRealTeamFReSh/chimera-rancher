@@ -9,8 +9,8 @@ pub const Z_UI: f32 = 100.;
 pub const Z_DAY_CYCLE: f32 = 50.;
 
 // day-night cycle
-pub const DAY_LENGTH: f32 = 300.0; // in seconds
-pub const STARTING_HOUR: f32 = 8.0;
+pub const DAY_LENGTH: f32 = 60.0; // in seconds
+pub const STARTING_HOUR: f32 = 20.0;
 pub const MAX_ALPHA: f32 = 0.85;
 pub const MIN_ALPHA: f32 = 0.1;
 pub const NIGHT_HOURS: f32 = 8.0;
@@ -46,12 +46,33 @@ pub const VILLAGER_REGEN_RATE: f32 = 2.0;
 pub const VILLAGER_ATTACK_RATE: f32 = 1.0;
 pub const CHIMERA_ATTACK_RATE: f32 = 1.0;
 
+// spawning
+pub const ANIMAL_SPAWN_MAX_X: f32 = 900.0;
+pub const ANIMAL_SPAWN_MIN_X: f32 = -900.0;
+pub const ANIMAL_SPAWN_MAX_Y: f32 = 1400.0;
+pub const ANIMAL_SPAWN_MIN_Y: f32 = 200.0;
+pub const ANIMAL_BASE_SPAWN_DURATION: f32 = 6.0;
+pub const ANIMAL_SPAWN_FACTOR: f32 = 25.0;
+pub const ANIMAL_SPAWN_HOURS: (u8, u8) = (20, 6);
+pub const VILLAGER_BASE_SPAWN_DURATION: f32 = 2.0;
+pub const VILLAGER_SPAWN_FACTOR: f32 = 25.0;
+pub const VILLAGER_SPAWN_HOURS: (u8, u8) = (6, 20);
+pub const VILLAGER_SPAWN_LOCATIONS: [(f32, f32); 6] = [
+    (-600.0, 500.0),
+    (0.0, 500.0),
+    (600.0, 500.0),
+    (-600.0, 1000.0),
+    (0.0, 1000.0),
+    (600.0, 1000.0),
+];
+
 // bobbing anim
 pub const ANIMATION_SPEED_FACTOR: f32 = 0.2;
 pub const ANIMATION_OFFSET_FACTOR: f32 = 4.0;
 
 // stats
-pub const STATS_DEVIATION: f32 = 0.5;
+pub const ANIMAL_STATS_DEVIATION: f32 = 0.5;
+pub const VILLAGER_STATS_DEVIATION: f32 = 0.2;
 
 // misc
 pub const DAMAGE_RED_DURATION: f32 = 0.5;
