@@ -14,8 +14,15 @@ pub fn villager_behavior_system(
 ) {
     for (mut villager, mut vel, transform, children) in villager_query.iter_mut() {
         let sprite_entity = children.iter().next().unwrap();
-
         let mut sprite = sprite_query.get_mut(*sprite_entity).unwrap();
+
+        if sprite.color.r() > 1.0 {
+            villager.damage_timer.tick(time.delta());
+            if villager.damage_timer.just_finished() {
+                sprite.color.set_r(1.0);
+            }
+        }
+
         let player_transform = player_query.iter().next().unwrap();
         let stats = villager.stats;
         match &mut villager.behavior {

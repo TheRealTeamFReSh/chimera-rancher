@@ -5,8 +5,13 @@ use rand::Rng;
 
 use self::behavior::chimera_behavior_system;
 use crate::{
-    animals::AnimalKind, animations::BobbingAnim, behaviors::UnitBehavior, constants,
-    health::Health, player::Player, states::GameStates,
+    animals::AnimalKind,
+    animations::BobbingAnim,
+    behaviors::{self, UnitBehavior},
+    constants,
+    health::Health,
+    player::Player,
+    states::GameStates,
 };
 
 mod behavior;
@@ -22,6 +27,7 @@ pub struct ChimeraComponent {
     pub behavior: UnitBehavior,
     pub damage_timer: Timer,
     pub stats: ChimeraStats,
+    pub attack_timer: Timer,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -32,6 +38,7 @@ pub struct ChimeraStats {
     pub health: f32,
     pub attack: f32,
     pub regen: f32,
+    pub range: f32,
 }
 
 // used for passing data from animals to chimeras
@@ -43,6 +50,7 @@ pub struct ChimeraPartAttributes {
     pub health: f32,
     pub attack: f32,
     pub regen: f32,
+    pub range: f32,
     pub collider_size: Vec2,
     pub texture: String,
     pub kind: ChimeraPartKind,
@@ -59,7 +67,8 @@ impl Plugin for ChimerasPlugin {
         app.add_system_set(
             SystemSet::on_update(GameStates::Game)
                 .with_system(test_spawn_chimera_system)
-                .with_system(chimera_behavior_system),
+                .with_system(chimera_behavior_system)
+                .with_system(behaviors::chimera_attack_system),
         );
     }
 }
@@ -156,13 +165,15 @@ pub fn spawn_chimera(
             angvel: 0.0,
         })
         .insert(ChimeraComponent {
-            damage_timer: Timer::from_seconds(0.3, true),
+            damage_timer: Timer::from_seconds(constants::DAMAGE_RED_DURATION, true),
+            attack_timer: Timer::from_seconds(constants::CHIMERA_ATTACK_RATE, true),
             behavior: UnitBehavior::Follow {
                 target: None,
                 distance: constants::CHIMERA_FOLLOW_DISTANCE,
             },
             stats: ChimeraStats {
                 attack: head_attributes.attack + tail_attributes.attack,
+                range: head_attributes.range + tail_attributes.range,
                 speed: head_attributes.speed + tail_attributes.speed,
                 accel: head_attributes.accel + tail_attributes.accel,
                 decel: head_attributes.decel + tail_attributes.decel,

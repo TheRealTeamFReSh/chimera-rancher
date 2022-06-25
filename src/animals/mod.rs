@@ -26,6 +26,7 @@ impl Plugin for AnimalsPlugin {
                 health: 120.0,
                 attack: 10.0,
                 regen: 1.0,
+                range: 150.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "pig.png".to_string(),
                 head_texture: "pighead.png".to_string(),
@@ -41,6 +42,7 @@ impl Plugin for AnimalsPlugin {
                 attack: 8.0,
                 health: 150.0,
                 regen: 2.0,
+                range: 150.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "cow.png".to_string(),
                 head_texture: "cowhead.png".to_string(),
@@ -56,6 +58,7 @@ impl Plugin for AnimalsPlugin {
                 attack: 15.0,
                 health: 100.0,
                 regen: 0.7,
+                range: 150.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "dog.png".to_string(),
                 head_texture: "doghead.png".to_string(),
@@ -71,6 +74,7 @@ impl Plugin for AnimalsPlugin {
                 health: 75.0,
                 attack: 18.0,
                 regen: 0.7,
+                range: 150.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "chicken.png".to_string(),
                 head_texture: "chickenhead.png".to_string(),
@@ -86,6 +90,7 @@ impl Plugin for AnimalsPlugin {
                 health: 140.0,
                 attack: 12.0,
                 regen: 1.0,
+                range: 150.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "horse.png".to_string(),
                 head_texture: "horsehead.png".to_string(),
@@ -131,6 +136,7 @@ pub struct AnimalStats {
     pub health: f32,
     pub attack: f32,
     pub regen: f32,
+    pub range: f32,
 }
 
 pub struct AnimalAttributes {
@@ -140,6 +146,7 @@ pub struct AnimalAttributes {
     pub attack: f32,
     pub health: f32,
     pub regen: f32,
+    pub range: f32,
     pub collider_size: Vec2,
     pub texture: String,
     pub head_texture: String,
@@ -240,6 +247,10 @@ pub fn spawn_animal(
                 attack: rand::thread_rng().gen_range(
                     attributes.attack * (1.0 - constants::STATS_DEVIATION)
                         ..attributes.attack * (1.0 + constants::STATS_DEVIATION),
+                ),
+                range: rand::thread_rng().gen_range(
+                    attributes.range * (1.0 - constants::STATS_DEVIATION)
+                        ..attributes.range * (1.0 + constants::STATS_DEVIATION),
                 ),
                 speed: rand::thread_rng().gen_range(
                     attributes.speed * (1.0 - constants::STATS_DEVIATION)

@@ -12,7 +12,7 @@ const ROUND_ZERO_RANGE: f32 = 10.0;
 
 mod attack;
 
-pub use self::attack::villager_attack_system;
+pub use self::attack::{chimera_attack_system, villager_attack_system};
 
 pub struct UnitStats {
     pub speed: f32,
