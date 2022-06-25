@@ -53,6 +53,11 @@ impl DayCycleResource {
         ((((self.day_timer.elapsed_secs() / self.day_length) * 24.0) - (self.get_hour() as f32))
             * 60.0) as u8
     }
+
+    #[allow(dead_code)]
+    pub fn is_night(&self) -> bool {
+        self.get_hour() < 7 || self.get_hour() > 21
+    }
 }
 
 fn day_cycle_system(
