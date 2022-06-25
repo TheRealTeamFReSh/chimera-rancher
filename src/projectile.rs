@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{projectile, states::GameStates, villagers::VillagerComponent};
+use crate::states::GameStates;
 
 #[derive(Debug, Component)]
 pub struct Projectile {
@@ -49,12 +49,11 @@ fn move_projectile(
 }
 
 fn handle_projectile_collision(
-    mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
     mut query_projectile: Query<(Entity, &Projectile, &Transform)>,
 ) {
     for collision_event in collision_events.iter() {
-        for (entity, _projectile, p_transform) in query_projectile.iter_mut() {
+        for (_, _projectile, _) in query_projectile.iter_mut() {
             println!("Received villager collision event: {:?}", collision_event);
             // is it intersecting with a villager?
             // is it intersecting with a boundary?
