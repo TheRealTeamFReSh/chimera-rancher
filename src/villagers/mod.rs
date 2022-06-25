@@ -3,18 +3,22 @@ use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
 mod behavior;
+mod spawn;
 
 use crate::animations::BobbingAnim;
 use crate::behaviors::{self, UnitBehavior};
-use crate::constants;
+use crate::constants::{self, VILLAGER_STATS_DEVIATION as STATS_DEVIATION};
 use crate::health::Health;
 use crate::states::GameStates;
-const STATS_DEVIATION: f32 = 0.2;
 
 pub struct VillagersPlugin;
 
 impl Plugin for VillagersPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_resource(spawn::VillagerSpawner {
+            spawn_timer: Timer::from_seconds(constants::VILLAGER_BASE_SPAWN_DURATION, false),
+        });
+
         // on enter
         app.add_system_set(
             SystemSet::on_enter(GameStates::Game).with_system(spawn_test_villager_system),
@@ -24,7 +28,8 @@ impl Plugin for VillagersPlugin {
         app.add_system_set(
             SystemSet::on_update(GameStates::Game)
                 .with_system(behavior::villager_behavior_system)
-                .with_system(behaviors::villager_attack_system),
+                .with_system(behaviors::villager_attack_system)
+                .with_system(spawn::spawn_villagers_system),
         );
     }
 }
@@ -51,6 +56,7 @@ pub struct VillagerComponent {
 pub struct VillagerSprite;
 
 fn spawn_test_villager_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+    /*
     spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
     spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
     spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
@@ -68,6 +74,7 @@ fn spawn_test_villager_system(mut commands: Commands, asset_server: Res<AssetSer
     spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
     spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
     spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    */
 }
 
 pub fn spawn_villager(position: Vec2, commands: &mut Commands, asset_server: &AssetServer) {
