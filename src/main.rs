@@ -18,6 +18,7 @@ mod inventory_parts;
 mod main_menu;
 mod pause_menu;
 mod player;
+mod projectile;
 mod sound_manager;
 mod states;
 mod stats_window;
@@ -51,6 +52,7 @@ fn main() {
         .add_plugin(health::HealthPlugin)
         .add_plugin(sound_manager::SoundChannelsPlugin)
         .add_plugin(TweeningPlugin)
+        .add_plugin(projectile::ProjectilePlugin)
         .add_state(GameStates::AssetsLoading)
         .add_system_set(
             SystemSet::on_enter(GameStates::Game)
