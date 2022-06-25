@@ -32,10 +32,9 @@ fn projectile_collision_system(
     mut query_projectile: Query<(Entity, &mut Projectile)>,
     mut query_villagers: Query<(Entity, &mut VillagerComponent, &mut Health, &Children)>,
     mut villager_sprite_query: Query<&mut Sprite, With<VillagerSprite>>,
-    time: Res<Time>,
 ) {
     for collision_event in collision_events.iter() {
-        for (projectile_entity, mut projectile) in query_projectile.iter_mut() {
+        for (projectile_entity, projectile) in query_projectile.iter_mut() {
             for (villager_entity, mut villager, mut villager_health, children) in
                 query_villagers.iter_mut()
             {
