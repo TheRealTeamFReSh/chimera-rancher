@@ -64,7 +64,7 @@ fn spawn_player(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let player = Player {
-        speed: 300.,
+        speed: 150.,
         acceleration: 0.1,
         friction: 0.2,
         capture_distance: 200.0,
