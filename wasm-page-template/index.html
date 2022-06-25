@@ -4,19 +4,23 @@
     <style>
       body {
         margin: 0;
-        background: rgb(53, 53, 53);
+        background: rgb(39, 0, 71);
         height: 100vh;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
       }
       canvas {
         background-color: white;
       }
+      .title {
+        color: white;
+      }
     </style>
   </head>
   <body>
-    <h1>Chimera Rancher</h1>
+    <h1 class="title">Chimera Rancher</h1>
   <script type="module">
     // prevent right click
     document.addEventListener('contextmenu', event => event.preventDefault());
