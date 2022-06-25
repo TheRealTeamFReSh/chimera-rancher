@@ -1,16 +1,13 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
 
 use crate::{
     chimeras::{ChimeraComponent, ChimeraSprite},
     health::Health,
-    player::Player,
     villagers::{VillagerComponent, VillagerSprite},
 };
 
 pub fn villager_attack_system(
     mut villager_query: Query<(&mut VillagerComponent, &Transform)>,
-    mut player_query: Query<&mut Health, (With<Player>, Without<ChimeraComponent>)>,
     mut chimera_query: Query<(&mut Health, &Transform, &Children, &mut ChimeraComponent)>,
     mut chimera_sprite_query: Query<&mut Sprite, With<ChimeraSprite>>,
     time: Res<Time>,

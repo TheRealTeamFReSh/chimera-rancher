@@ -147,7 +147,7 @@ pub fn chimera_behavior_system(
                     }
                 }
             }
-            UnitBehavior::RunAway { target } => todo!(),
+            UnitBehavior::RunAway { target: _ } => todo!(),
         }
     }
 }
