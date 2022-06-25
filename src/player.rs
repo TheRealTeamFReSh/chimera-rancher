@@ -239,42 +239,39 @@ fn fire_projectile(
         // get player position
         for (player_transform, _) in player_q.iter() {
             let player_pos = player_transform.translation;
-            let start_x = player_pos.x + 77. / 2.0;
-            let start_y = player_pos.y + 50. / 2.0;
+            let start_x = player_pos.x;
+            let start_y = player_pos.y;
             let origin = Vec2::new(start_x, start_y);
 
-            // TODO: find the angle between the mouse cursor and player
-            let angle = (cursor_pos.y - origin.y).atan2(cursor_pos.x - origin.x);
-
             // spawn projectile
-            let texture_handle = asset_server.load("triangle.png");
+            let texture_handle = asset_server.load("small_triangle.png");
             let texture_atlas =
-                TextureAtlas::from_grid(texture_handle, Vec2::new(192.0, 190.0), 1, 1);
+                TextureAtlas::from_grid(texture_handle, Vec2::new(24.0, 24.0), 1, 1);
             let texture_atlas_handle = texture_atlases.add(texture_atlas);
-
             let projectile = Projectile {
-                direction_x: 250.0 * angle.cos(),
-                direction_y: 250.0 * angle.sin(),
+                accel: 200.0,
+                target: Vec2::new(cursor_pos.x, cursor_pos.y),
+                speed: 500.,
             };
             commands
                 .spawn_bundle(SpriteSheetBundle {
                     texture_atlas: texture_atlas_handle,
                     transform: Transform {
-                        translation: Vec3::new(0.0, 0.0, 100.0),
-                        scale: Vec3::new(0.5, 0.5, 1.),
+                        translation: Vec3::new(origin.x, origin.y, 1.0),
                         ..Default::default()
                     },
                     ..Default::default()
                 })
                 .insert(Velocity {
-                    linvel: Vec2::new(cursor_pos.x, cursor_pos.y),
+                    linvel: Vec2::new(0.0, 0.0),
                     angvel: 0.5,
                 })
-                .insert(GravityScale(0.0))
                 .insert(Transform::from_translation(Vec3::new(
                     start_x, start_y, 100.0,
                 )))
                 .insert(RigidBody::Dynamic)
+                .insert(Collider::cuboid(24.0, 24.0))
+                .insert(ActiveEvents::COLLISION_EVENTS)
                 .insert(projectile);
         }
     }
