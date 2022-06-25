@@ -3,6 +3,7 @@ use bevy_tweening::{lens::UiPositionLens, Animator, EaseFunction, Tween, Tweenin
 
 use crate::{
     animals::AnimalComponent,
+    assets_manager::AssetsManager,
     chimeras::ChimeraComponent,
     constants::{self, MaxStats},
     health::Health,
@@ -43,22 +44,42 @@ pub fn update_window_stats(
     mut q_ui_bar_value: Query<&mut Style, With<ValueBarComponent>>,
 ) {
     if let Some(target_entity) = stats_window.target {
+        let zero_health = Health {
+            health: 0.,
+            max_health: 0.,
+            regen: 0.,
+            regen_timer: Timer::from_seconds(0.0, false),
+        };
         // get the stats
-        let (health, accel, decel, attack, speed) =
+        let (health, accel, decel, attack, speed, regen, range) =
             if stats_window.target_type == EntityType::Chimera {
                 if let Ok((health, chimera)) = q_chimera.get(target_entity) {
                     let stats = chimera.stats;
-                    (health, stats.accel, stats.decel, stats.attack, stats.speed)
+                    (
+                        health,
+                        stats.accel,
+                        stats.decel,
+                        stats.attack,
+                        stats.speed,
+                        stats.regen,
+                        stats.range,
+                    )
                 } else {
-                    (&constants::DEFAULT_HEALTH, 0., 0., 0., 0.)
+                    (&zero_health, 0., 0., 0., 0., 0., 0.)
                 }
+            } else if let Ok((health, animal)) = q_animal.get(target_entity) {
+                let stats = animal.stats;
+                (
+                    health,
+                    stats.accel,
+                    stats.decel,
+                    stats.attack,
+                    stats.speed,
+                    stats.regen,
+                    stats.range,
+                )
             } else {
-                if let Ok((health, animal)) = q_animal.get(target_entity) {
-                    let stats = animal.stats;
-                    (health, stats.accel, stats.decel, stats.attack, stats.speed)
-                } else {
-                    (&constants::DEFAULT_HEALTH, 0., 0., 0., 0.)
-                }
+                (&zero_health, 0., 0., 0., 0., 0., 0.)
             };
 
         // if the values are null, the entity does not exist anymore
@@ -78,6 +99,8 @@ pub fn update_window_stats(
                 BarStatType::Speed => (maxi_stats.speed, speed, speed),
                 BarStatType::Attack => (maxi_stats.attack, attack, attack),
                 BarStatType::Health => (maxi_stats.health, health.max_health, health.health),
+                BarStatType::Regen => (maxi_stats.regen, regen, regen),
+                BarStatType::Range => (maxi_stats.range, range, range),
             };
 
             // getting max_value
@@ -103,8 +126,9 @@ pub fn update_window_stats(
     }
 }
 
-pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup_ui(mut commands: Commands, assets: Res<AssetsManager>) {
     let container = NodeBundle {
+        transform: Transform::from_xyz(0., 0., constants::Z_UI),
         style: Style {
             position_type: PositionType::Absolute,
             position: Rect {
@@ -125,7 +149,7 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     let border = NodeBundle {
         style: Style {
             position: CLOSED_POS,
-            size: Size::new(Val::Px(300.0), Val::Px(450.0)),
+            size: Size::new(Val::Px(300.0), Val::Px(550.0)),
             border: Rect::all(Val::Px(2.0)),
             ..default()
         },
@@ -159,7 +183,7 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         text: Text::with_section(
             "Chimera stats",
             TextStyle {
-                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                font: assets.font_bold.clone(),
                 font_size: 30.0,
                 color: Color::WHITE,
             },
@@ -177,21 +201,27 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     .spawn_bundle(content_container)
                     .with_children(|parent| {
                         parent.spawn_bundle(content_text).insert(StatWindowTitle);
+                        // health
+                        parent.spawn_bundle(create_stat_text(&assets, "Health"));
+                        create_ui_bar(parent, UIBar::from_type(BarStatType::Health));
                         // speed
-                        parent.spawn_bundle(create_stat_text(&asset_server, "Speed"));
+                        parent.spawn_bundle(create_stat_text(&assets, "Speed"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Speed));
                         // accel
-                        parent.spawn_bundle(create_stat_text(&asset_server, "Acceleration"));
+                        parent.spawn_bundle(create_stat_text(&assets, "Acceleration"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Acceleration));
                         // decel
-                        parent.spawn_bundle(create_stat_text(&asset_server, "Deceleration"));
+                        parent.spawn_bundle(create_stat_text(&assets, "Deceleration"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Deceleration));
                         // attack
-                        parent.spawn_bundle(create_stat_text(&asset_server, "Attack"));
+                        parent.spawn_bundle(create_stat_text(&assets, "Attack"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Attack));
-                        // decel
-                        parent.spawn_bundle(create_stat_text(&asset_server, "Health"));
-                        create_ui_bar(parent, UIBar::from_type(BarStatType::Health));
+                        // regen
+                        parent.spawn_bundle(create_stat_text(&assets, "Regeneration"));
+                        create_ui_bar(parent, UIBar::from_type(BarStatType::Regen));
+                        // range
+                        parent.spawn_bundle(create_stat_text(&assets, "Range"));
+                        create_ui_bar(parent, UIBar::from_type(BarStatType::Range));
                     });
             })
             .insert(Animator::<Style>::default())
@@ -247,7 +277,7 @@ pub fn display_stats_window(
     }
 }
 
-fn create_stat_text(asset_server: &Res<AssetServer>, value: &str) -> TextBundle {
+fn create_stat_text(assets: &Res<AssetsManager>, value: &str) -> TextBundle {
     TextBundle {
         style: Style {
             margin: Rect {
@@ -261,7 +291,7 @@ fn create_stat_text(asset_server: &Res<AssetServer>, value: &str) -> TextBundle 
         text: Text::with_section(
             value,
             TextStyle {
-                font: asset_server.load("fonts/FiraSans-Regular.ttf"),
+                font: assets.font_regular.clone(),
                 font_size: 24.0,
                 color: Color::WHITE,
             },

@@ -1,26 +1,27 @@
 use bevy::prelude::*;
 use bevy_ninepatch::{NinePatchBuilder, NinePatchBundle, NinePatchData};
 
-use crate::pause_menu::button::UIButton;
+use crate::{assets_manager::AssetsManager, constants, pause_menu::button::UIButton};
 
 // building the UI of the console
 pub fn build_ui(
     mut commands: Commands,
     mut nine_patches: ResMut<Assets<NinePatchBuilder>>,
-    asset_server: Res<AssetServer>,
+    assets: Res<AssetsManager>,
 ) {
     info!("[PauseMenuPlugin] Building console UI");
 
-    let background_texture_handle: Handle<Image> = asset_server.load("ui_background.png");
+    let background_texture_handle: Handle<Image> = assets.texture_ui_background.clone();
     let background_nine_patch_handle =
         nine_patches.add(NinePatchBuilder::by_margins(20, 20, 20, 20));
 
-    let font_handle: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
+    let font_handle: Handle<Font> = assets.font_bold.clone();
 
     // ---------- UI COMPONENTS ----------//
 
     // root component
     let parent_component = NodeBundle {
+        transform: Transform::from_xyz(0., 0., constants::Z_UI),
         style: Style {
             position_type: PositionType::Absolute,
             position: Rect::all(Val::Px(0.)),

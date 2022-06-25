@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use super::{ChimeraComponent, ChimeraSprite};
+use crate::behaviors::UnitBehavior;
+use crate::constants::{CHIMERA_IDLE_DURATION, CHIMERA_IDLE_DURATION_SPREAD};
 use crate::player::Player;
 use crate::villagers::VillagerComponent;
 use crate::{behaviors, constants};
@@ -9,17 +11,31 @@ use crate::{behaviors, constants};
 // Handles animals behaving according to their current behavior
 pub fn chimera_behavior_system(
     time: Res<Time>,
-    mut chimera_query: Query<(&mut ChimeraComponent, &mut Velocity, &Transform)>,
+    mut chimera_query: Query<(&mut ChimeraComponent, &mut Velocity, &Transform, &Children)>,
     mut sprite_query: Query<&mut Sprite, With<ChimeraSprite>>,
     player_query: Query<&Transform, With<Player>>,
     villager_query: Query<&Transform, With<VillagerComponent>>,
 ) {
-    for (mut chimera, mut vel, transform) in chimera_query.iter_mut() {
+    for (mut chimera, mut vel, transform, children) in chimera_query.iter_mut() {
+        let sprite_entities = children.iter().take(2).copied().collect::<Vec<Entity>>();
+
+        let mut sprites: [Mut<Sprite>; 2] = sprite_query
+            .get_many_mut((*sprite_entities).try_into().unwrap())
+            .unwrap();
+
+        let (sprite_1, sprite_2) = sprites.split_at_mut(1);
+
+        if sprite_1[0].color.r() > 1.0 {
+            chimera.damage_timer.tick(time.delta());
+            if chimera.damage_timer.just_finished() {
+                sprite_1[0].color.set_r(1.0);
+                sprite_2[0].color.set_r(1.0);
+            }
+        }
+
         let stats = chimera.stats;
+
         let player_transform = player_query.iter().next().unwrap();
-        let mut sprite_iter = sprite_query.iter_mut();
-        let mut sprite_1 = sprite_iter.next().unwrap();
-        let mut sprite_2 = sprite_iter.next().unwrap();
 
         let position = Vec2::new(transform.translation.x, transform.translation.y);
 
@@ -40,13 +56,13 @@ pub fn chimera_behavior_system(
                 if position.distance(test_pos) < position.distance(lowest_pos) {
                     pursue_villager_pos = Some(test_pos);
                 }
-            } else if position.distance(test_pos) < constants::PURSUE_RANGE {
+            } else if position.distance(test_pos) < constants::CHIMERA_PURSUE_RANGE {
                 pursue_villager_pos = Some(test_pos);
             }
         }
 
         match &mut chimera.behavior {
-            behaviors::UnitBehavior::Idle {
+            UnitBehavior::Idle {
                 timer,
                 base_duration,
                 duration_spread,
@@ -55,7 +71,7 @@ pub fn chimera_behavior_system(
             } => {
                 behaviors::idle_behavior(
                     &mut vel,
-                    vec![&mut sprite_1, &mut sprite_2],
+                    vec![&mut sprite_1[0], &mut sprite_2[0]],
                     &time,
                     timer,
                     base_duration,
@@ -69,17 +85,17 @@ pub fn chimera_behavior_system(
                     chimera.behavior = behaviors::UnitBehavior::Pursue {
                         target: Some(villager_pos),
                     };
-                } else if position.distance(player_position) < constants::FOLLOW_RANGE {
+                } else if position.distance(player_position) < constants::CHIMERA_FOLLOW_RANGE {
                     chimera.behavior = behaviors::UnitBehavior::Follow {
                         target: Some(player_position),
-                        distance: constants::FOLLOW_DISTANCE,
+                        distance: constants::CHIMERA_FOLLOW_DISTANCE,
                     }
                 }
             }
-            behaviors::UnitBehavior::Pursue { target } => {
+            UnitBehavior::Pursue { target } => {
                 behaviors::pursue_behavior(
                     &mut vel,
-                    vec![&mut sprite_1, &mut sprite_2],
+                    vec![&mut sprite_1[0], &mut sprite_2[0]],
                     stats.into(),
                     position,
                     *target,
@@ -92,18 +108,18 @@ pub fn chimera_behavior_system(
                     }
                 } else {
                     chimera.behavior = behaviors::UnitBehavior::Idle {
-                        timer: Timer::from_seconds(2.0, false),
-                        base_duration: 2.5,
-                        duration_spread: 1.0,
+                        timer: Timer::from_seconds(constants::CHIMERA_IDLE_DURATION, false),
+                        base_duration: CHIMERA_IDLE_DURATION,
+                        duration_spread: CHIMERA_IDLE_DURATION_SPREAD,
                         direction: Vec2::default(),
                         is_moving: false,
                     }
                 }
             }
-            behaviors::UnitBehavior::Follow { target, distance } => {
+            UnitBehavior::Follow { target, distance } => {
                 behaviors::follow_behavior(
                     &mut vel,
-                    vec![&mut sprite_1, &mut sprite_2],
+                    vec![&mut sprite_1[0], &mut sprite_2[0]],
                     stats.into(),
                     position,
                     *target,
@@ -121,16 +137,17 @@ pub fn chimera_behavior_system(
                     chimera.behavior = behaviors::UnitBehavior::Pursue {
                         target: Some(villager_pos),
                     };
-                } else if position.distance(player_position) > constants::FOLLOW_RANGE {
+                } else if position.distance(player_position) > constants::CHIMERA_FOLLOW_RANGE {
                     chimera.behavior = behaviors::UnitBehavior::Idle {
-                        timer: Timer::from_seconds(2.0, false),
-                        base_duration: 2.5,
-                        duration_spread: 1.0,
+                        timer: Timer::from_seconds(constants::CHIMERA_IDLE_DURATION, false),
+                        base_duration: constants::CHIMERA_IDLE_DURATION,
+                        duration_spread: constants::CHIMERA_IDLE_DURATION_SPREAD,
                         direction: Vec2::default(),
                         is_moving: false,
                     }
                 }
             }
+            UnitBehavior::RunAway { target: _ } => todo!(),
         }
     }
 }

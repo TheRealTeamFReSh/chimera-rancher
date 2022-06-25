@@ -7,6 +7,8 @@ pub enum BarStatType {
     Speed,
     Attack,
     Health,
+    Regen,
+    Range,
 }
 
 #[derive(Component)]
