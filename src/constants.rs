@@ -2,10 +2,18 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 
-use crate::{
-    animals::{AnimalAttributes, AnimalKind},
-    health::Health,
-};
+use crate::animals::{AnimalAttributes, AnimalKind};
+
+// Zindexes
+pub const Z_UI: f32 = 100.;
+pub const Z_DAY_CYCLE: f32 = 50.;
+
+// day-night cycle
+pub const DAY_LENGTH: f32 = 240.0;
+pub const STARTING_HOUR: f32 = 8.0;
+pub const MAX_ALPHA: f32 = 0.85;
+pub const MIN_ALPHA: f32 = 0.1;
+pub const NIGHT_HOURS: f32 = 8.0;
 
 // stats splitting
 pub const HEAD_SPEED_PERCENT: f32 = 0.35;

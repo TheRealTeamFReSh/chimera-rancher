@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ninepatch::{NinePatchBuilder, NinePatchBundle, NinePatchData};
 
-use crate::pause_menu::button::UIButton;
+use crate::{constants, pause_menu::button::UIButton};
 
 // building the UI of the console
 pub fn build_ui(
@@ -21,6 +21,7 @@ pub fn build_ui(
 
     // root component
     let parent_component = NodeBundle {
+        transform: Transform::from_xyz(0., 0., constants::Z_UI),
         style: Style {
             position_type: PositionType::Absolute,
             position: Rect::all(Val::Px(0.)),

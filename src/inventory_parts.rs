@@ -1,6 +1,6 @@
 use bevy::{prelude::*, ui::widget::ImageMode};
 
-use crate::{chimeras::ChimeraPartKind, player::Player, states::GameStates};
+use crate::{chimeras::ChimeraPartKind, constants, player::Player, states::GameStates};
 
 pub struct InventoryUIPlugin;
 
@@ -19,6 +19,7 @@ pub struct PartInventoryContainer;
 
 fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     let root = NodeBundle {
+        transform: Transform::from_xyz(0., 0., constants::Z_UI),
         style: Style {
             size: Size::new(Val::Percent(100.), Val::Percent(100.)),
             padding: Rect::all(Val::Px(5.)),

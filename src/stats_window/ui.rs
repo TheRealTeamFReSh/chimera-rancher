@@ -109,6 +109,7 @@ pub fn update_window_stats(
 
 pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     let container = NodeBundle {
+        transform: Transform::from_xyz(0., 0., constants::Z_UI),
         style: Style {
             position_type: PositionType::Absolute,
             position: Rect {

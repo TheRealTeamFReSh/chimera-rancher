@@ -9,6 +9,7 @@ mod behaviors;
 mod camera;
 mod chimeras;
 mod constants;
+mod day_cycle;
 mod health;
 mod inventory_parts;
 mod pause_menu;
@@ -38,6 +39,7 @@ fn main() {
         .add_plugin(stats_window::StatsWindowPlugin)
         .add_plugin(inventory_parts::InventoryUIPlugin)
         .add_plugin(pause_menu::PauseMenuPlugin)
+        .add_plugin(day_cycle::DayCyclePlugin)
         .add_plugin(health::HealthPlugin)
         .add_plugin(TweeningPlugin)
         .add_state(GameStates::Game)
