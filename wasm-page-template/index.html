@@ -4,9 +4,7 @@
     <style>
       body {
         margin: 0;
-        background: linear-gradient(-45deg, #a6a6a6, #5ac05a, #262626, #a6a6a6);
-        background-size: 400% 400%;
-        animation: gradient 15s ease infinite;
+        background: rgb(53, 53, 53);
         height: 100vh;
         display: flex;
         justify-content: center;
@@ -15,22 +13,16 @@
       canvas {
         background-color: white;
       }
-
-      @keyframes gradient {
-        0% {
-          background-position: 0% 50%;
-        }
-        50% {
-          background-position: 100% 50%;
-        }
-        100% {
-          background-position: 0% 50%;
-        }
-      }
     </style>
   </head>
+  <body>
+    <h1>Chimera Rancher</h1>
   <script type="module">
+    // prevent right click
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
     import init from './chimera-rancher.js'
     init()
   </script>
+  </body>
 </html>
