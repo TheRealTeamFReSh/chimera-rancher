@@ -6,6 +6,7 @@ use crate::{
     assets_manager::AssetsManager,
     chimeras::{ChimeraComponent, ChimeraSprite},
     health::Health,
+    player::Player,
     sound_manager::ChimeraHitAudioChannel,
     villagers::{VillagerComponent, VillagerSprite},
 };
@@ -14,6 +15,14 @@ pub fn villager_attack_system(
     assets: Res<AssetsManager>,
     mut villager_query: Query<(&mut VillagerComponent, &Transform)>,
     mut chimera_query: Query<(&mut Health, &Transform, &Children, &mut ChimeraComponent)>,
+    mut player_query: Query<
+        (&mut Health, &Transform, &Player, &mut TextureAtlasSprite),
+        (
+            Without<ChimeraComponent>,
+            Without<VillagerComponent>,
+            Without<ChimeraSprite>,
+        ),
+    >,
     mut chimera_sprite_query: Query<&mut Sprite, With<ChimeraSprite>>,
     time: Res<Time>,
     hit_audio: Res<AudioChannel<ChimeraHitAudioChannel>>,
@@ -27,6 +36,23 @@ pub fn villager_attack_system(
 
         if villager.attack_timer.just_finished() {
             //execute attack on first chimera in range
+            if let Some((mut player_health, player_transform, player, mut player_sprite)) =
+                player_query.iter_mut().next()
+            {
+                info!("player_damaged");
+                let player_pos = Vec2::new(
+                    player_transform.translation.x,
+                    player_transform.translation.y,
+                );
+                if villager_pos.distance(player_pos) < villager.stats.range {
+                    //hit_audio.set_playback_rate(rand::thread_rng().gen_range(0.3..1.8));
+                    //hit_audio.play(assets.sound_hit.clone());
+                    player_health.health -= villager.stats.attack;
+                    player_sprite.color.set_r(255.0);
+                    info!("player_damaged");
+                    break;
+                }
+            }
             for (mut chimera_health, chimera_transform, children, mut chimera) in
                 chimera_query.iter_mut()
             {

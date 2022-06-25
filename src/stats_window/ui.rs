@@ -43,11 +43,11 @@ pub fn update_window_stats(
         (With<MaxBarComponent>, Without<ValueBarComponent>),
     >,
     mut q_ui_bar_value: Query<&mut Style, With<ValueBarComponent>>,
-    q_player: Query<&Player>,
+    q_player: Query<(&Player, &Health)>,
 ) {
     if let Some(target_entity) = stats_window.target {
         // get the player
-        let player = q_player.get_single().unwrap();
+        let (player, player_health) = q_player.get_single().unwrap();
 
         let zero_health = Health {
             health: 0.,
@@ -108,7 +108,11 @@ pub fn update_window_stats(
                 BarStatType::Range => (maxi_stats.range, range, range),
 
                 // @cdsupina: set this to (player.max_health, player.max_health, player.health)
-                BarStatType::PlayerHealth => (player.speed, player.speed, player.speed),
+                BarStatType::PlayerHealth => (
+                    player_health.max_health,
+                    player_health.max_health,
+                    player_health.health,
+                ),
             };
 
             // getting max_value
