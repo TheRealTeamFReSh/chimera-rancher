@@ -16,7 +16,6 @@ pub fn spawn_animals_system(
     day_cycle: Res<DayCycleResource>,
     mut animal_spawner: ResMut<AnimalSpawner>,
     animal_attr_res: Res<AnimalAttributesResource>,
-    asset_server: Res<AssetServer>,
 ) {
     if day_cycle.get_hour() > ANIMAL_SPAWN_HOURS.0 || day_cycle.get_hour() < ANIMAL_SPAWN_HOURS.1 {
         animal_spawner.spawn_timer.tick(time.delta());
