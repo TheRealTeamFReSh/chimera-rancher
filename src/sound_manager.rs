@@ -13,7 +13,12 @@ impl Plugin for SoundChannelsPlugin {
             .add_audio_channel::<SpawnChimeraAudioChannel>()
             .add_audio_channel::<ChimeraHitAudioChannel>()
             .add_audio_channel::<FootstepAudioChannel>()
-            .add_audio_channel::<BackgroundAudioChannel>();
+            .add_audio_channel::<BackgroundAudioChannel>()
+            .add_audio_channel::<ChimeraCaptureAudioChannel>()
+            .add_audio_channel::<VillagerHitAudioChannel>()
+            .add_audio_channel::<ChimeraDeathAudioChannel>()
+            .add_audio_channel::<ChimeraAttackAudioChanel>()
+            .add_audio_channel::<VillagerAttackAudioChannnel>();
 
         // on game start
         app.add_system_set(
@@ -28,6 +33,11 @@ pub struct SpawnChimeraAudioChannel;
 pub struct ChimeraHitAudioChannel;
 pub struct FootstepAudioChannel;
 pub struct BackgroundAudioChannel;
+pub struct ChimeraCaptureAudioChannel;
+pub struct VillagerHitAudioChannel;
+pub struct ChimeraDeathAudioChannel;
+pub struct ChimeraAttackAudioChanel;
+pub struct VillagerAttackAudioChannnel;
 
 const BACKGROUND_MUSICS: &'static [&str] = &[
     "ambient-piano-ampamp-strings-10711.ogg",
