@@ -1,6 +1,9 @@
 use bevy::{prelude::*, ui::widget::ImageMode};
 
-use crate::{chimeras::ChimeraPartKind, constants, player::Player, states::GameStates};
+use crate::{
+    assets_manager::AssetsManager, chimeras::ChimeraPartKind, constants, player::Player,
+    states::GameStates,
+};
 
 pub struct InventoryUIPlugin;
 
@@ -17,7 +20,7 @@ impl Plugin for InventoryUIPlugin {
 #[derive(Component)]
 pub struct PartInventoryContainer;
 
-fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup_ui(mut commands: Commands, assets: Res<AssetsManager>) {
     let root = NodeBundle {
         transform: Transform::from_xyz(0., 0., constants::Z_UI),
         style: Style {
@@ -30,7 +33,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
 
     let hotbar = ImageBundle {
-        image: asset_server.load("hotbar.png").into(),
+        image: assets.texture_hotbar.clone().into(),
         image_mode: ImageMode::KeepAspect,
         style: Style {
             position_type: PositionType::Absolute,
@@ -49,12 +52,12 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(hotbar);
     commands
         .spawn_bundle(root)
-        .with_children(|parent| {
-            create_item_icon(&asset_server, parent, "chickenhead.png", true);
-            create_item_icon(&asset_server, parent, "chickentail.png", false);
-            create_item_icon(&asset_server, parent, "cowtail.png", false);
-            create_item_icon(&asset_server, parent, "pighead.png", true);
-        })
+        // .with_children(|parent| {
+        //     create_item_icon(&asset_server, parent, "chickenhead.png", true);
+        //     create_item_icon(&asset_server, parent, "chickentail.png", false);
+        //     create_item_icon(&asset_server, parent, "cowtail.png", false);
+        //     create_item_icon(&asset_server, parent, "pighead.png", true);
+        // })
         .insert(PartInventoryContainer);
 }
 
@@ -62,7 +65,6 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
 // visibility instead of despawning
 fn update_ui(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     q_container: Query<Entity, With<PartInventoryContainer>>,
     q_player: Query<&Player>,
 ) {
@@ -76,19 +78,14 @@ fn update_ui(
             for player in q_player.iter() {
                 for part in player.inventory.chimera_parts.iter() {
                     let is_head = matches!(part.kind, ChimeraPartKind::Head(_));
-                    create_item_icon(&asset_server, parent, &part.texture, is_head)
+                    create_item_icon(parent, &part.texture, is_head)
                 }
             }
         });
     }
 }
 
-fn create_item_icon(
-    asset_server: &Res<AssetServer>,
-    parent: &mut ChildBuilder,
-    path: &str,
-    is_head: bool,
-) {
+fn create_item_icon(parent: &mut ChildBuilder, handle: &Handle<Image>, is_head: bool) {
     parent
         .spawn_bundle(NodeBundle {
             style: Style {
@@ -108,7 +105,7 @@ fn create_item_icon(
         })
         .with_children(|parent| {
             parent.spawn_bundle(ImageBundle {
-                image: asset_server.load(path).into(),
+                image: handle.clone().into(),
                 image_mode: ImageMode::KeepAspect,
                 style: Style {
                     position_type: PositionType::Absolute,

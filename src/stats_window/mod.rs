@@ -2,7 +2,8 @@ use bevy::{log, prelude::*};
 use bevy_rapier2d::{plugin::RapierContext, prelude::InteractionGroups};
 
 use crate::{
-    animals::AnimalComponent, camera::MainCamera, chimeras::ChimeraComponent, states::GameStates,
+    animals::AnimalComponent, assets_manager::AssetsManager, camera::MainCamera,
+    chimeras::ChimeraComponent, states::GameStates,
 };
 
 mod ui;
@@ -57,7 +58,7 @@ fn setup_stats_target(
     mut commands: Commands,
     mut stats_window: ResMut<StatsWindow>,
     // q_transform: Query<&Transform, With<ChimeraComponent>>,
-    asset_server: Res<AssetServer>,
+    assets: Res<AssetsManager>,
 ) {
     if stats_window.target_setup {
         return;
@@ -70,7 +71,7 @@ fn setup_stats_target(
         commands.entity(target_entity).with_children(|parent| {
             let child_id = parent
                 .spawn_bundle(SpriteBundle {
-                    texture: asset_server.load("target.png"),
+                    texture: assets.texture_target.clone(),
                     ..default()
                 })
                 .insert(StatsWindowTarget)

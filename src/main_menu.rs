@@ -23,7 +23,7 @@ pub struct MainMenuUI;
 fn build_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(ImageBundle {
-            image: asset_server.load("main_menu.png").into(),
+            image: asset_server.load("main_menu.png").into(), // not using assetsmanager as we don't load everything on the main menu
             style: Style {
                 size: Size::new(Val::Percent(100.), Val::Percent(100.)),
                 ..default()

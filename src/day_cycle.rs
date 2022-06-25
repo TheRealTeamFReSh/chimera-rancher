@@ -2,7 +2,7 @@ use std::{f32::consts::PI, time::Duration};
 
 use bevy::{log, prelude::*};
 
-use crate::{constants, states::GameStates};
+use crate::{assets_manager::AssetsManager, constants, states::GameStates};
 
 pub struct DayCyclePlugin;
 
@@ -88,7 +88,7 @@ pub struct LightingComponent;
 fn setup_lighting_system(
     mut commands: Commands,
     mut day_cycle_resource: ResMut<DayCycleResource>,
-    asset_server: Res<AssetServer>,
+    assets: Res<AssetsManager>,
 ) {
     day_cycle_resource
         .day_timer
@@ -101,7 +101,7 @@ fn setup_lighting_system(
         .insert(LightingComponent)
         .insert_bundle(ImageBundle {
             transform: Transform::from_xyz(0., 0., constants::Z_DAY_CYCLE),
-            image: asset_server.load("lighting.png").into(),
+            image: assets.texture_lightning.clone().into(),
             style: Style {
                 position_type: PositionType::Absolute,
                 position: Rect::all(Val::Px(0.0)),

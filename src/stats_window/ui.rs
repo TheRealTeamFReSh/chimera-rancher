@@ -3,6 +3,7 @@ use bevy_tweening::{lens::UiPositionLens, Animator, EaseFunction, Tween, Tweenin
 
 use crate::{
     animals::AnimalComponent,
+    assets_manager::AssetsManager,
     chimeras::ChimeraComponent,
     constants::{self, MaxStats},
     health::Health,
@@ -107,7 +108,7 @@ pub fn update_window_stats(
     }
 }
 
-pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup_ui(mut commands: Commands, assets: Res<AssetsManager>) {
     let container = NodeBundle {
         transform: Transform::from_xyz(0., 0., constants::Z_UI),
         style: Style {
@@ -164,7 +165,7 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         text: Text::with_section(
             "Chimera stats",
             TextStyle {
-                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                font: assets.font_bold.clone(),
                 font_size: 30.0,
                 color: Color::WHITE,
             },
@@ -183,19 +184,19 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     .with_children(|parent| {
                         parent.spawn_bundle(content_text).insert(StatWindowTitle);
                         // speed
-                        parent.spawn_bundle(create_stat_text(&asset_server, "Speed"));
+                        parent.spawn_bundle(create_stat_text(&assets, "Speed"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Speed));
                         // accel
-                        parent.spawn_bundle(create_stat_text(&asset_server, "Acceleration"));
+                        parent.spawn_bundle(create_stat_text(&assets, "Acceleration"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Acceleration));
                         // decel
-                        parent.spawn_bundle(create_stat_text(&asset_server, "Deceleration"));
+                        parent.spawn_bundle(create_stat_text(&assets, "Deceleration"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Deceleration));
                         // attack
-                        parent.spawn_bundle(create_stat_text(&asset_server, "Attack"));
+                        parent.spawn_bundle(create_stat_text(&assets, "Attack"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Attack));
                         // decel
-                        parent.spawn_bundle(create_stat_text(&asset_server, "Health"));
+                        parent.spawn_bundle(create_stat_text(&assets, "Health"));
                         create_ui_bar(parent, UIBar::from_type(BarStatType::Health));
                     });
             })
@@ -252,7 +253,7 @@ pub fn display_stats_window(
     }
 }
 
-fn create_stat_text(asset_server: &Res<AssetServer>, value: &str) -> TextBundle {
+fn create_stat_text(assets: &Res<AssetsManager>, value: &str) -> TextBundle {
     TextBundle {
         style: Style {
             margin: Rect {
@@ -266,7 +267,7 @@ fn create_stat_text(asset_server: &Res<AssetServer>, value: &str) -> TextBundle 
         text: Text::with_section(
             value,
             TextStyle {
-                font: asset_server.load("fonts/FiraSans-Regular.ttf"),
+                font: assets.font_regular.clone(),
                 font_size: 24.0,
                 color: Color::WHITE,
             },

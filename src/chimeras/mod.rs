@@ -8,6 +8,7 @@ use self::behavior::chimera_behavior_system;
 use crate::{
     animals::AnimalKind,
     animations::BobbingAnim,
+    assets_manager::AssetsManager,
     behaviors::{self, UnitBehavior},
     constants,
     health::Health,
@@ -54,7 +55,7 @@ pub struct ChimeraPartAttributes {
     pub regen: f32,
     pub range: f32,
     pub collider_size: Vec2,
-    pub texture: String,
+    pub texture: Handle<Image>,
     pub kind: ChimeraPartKind,
 }
 
@@ -79,7 +80,7 @@ impl Plugin for ChimerasPlugin {
 pub fn test_spawn_chimera_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    assets: Res<AssetsManager>,
     mut player_query: Query<(&mut Player, &Transform)>,
     spawn_audio: Res<AudioChannel<SpawnChimeraAudioChannel>>,
 ) {
@@ -123,7 +124,7 @@ pub fn test_spawn_chimera_system(
 
                 // play audio
                 spawn_audio.set_playback_rate(rand::thread_rng().gen_range(0.7..1.8));
-                spawn_audio.play(asset_server.load("sounds/spawn_chimera.ogg"));
+                spawn_audio.play(assets.sound_spawn_chimera.clone());
 
                 spawn_chimera(
                     (head_part, tail_part),
@@ -132,7 +133,6 @@ pub fn test_spawn_chimera_system(
                         player_transform.translation.y + 150.0,
                     ),
                     &mut commands,
-                    &asset_server,
                 )
             }
         }
@@ -144,7 +144,6 @@ pub fn spawn_chimera(
     chimera_parts: (ChimeraPartAttributes, ChimeraPartAttributes),
     position: Vec2,
     commands: &mut Commands,
-    asset_server: &AssetServer,
 ) {
     let mut head_attributes = chimera_parts.0.clone();
     let mut tail_attributes = chimera_parts.1;
@@ -201,7 +200,7 @@ pub fn spawn_chimera(
 
             parent
                 .spawn_bundle(SpriteBundle {
-                    texture: asset_server.load(&head_attributes.texture),
+                    texture: head_attributes.texture,
                     sprite: Sprite {
                         flip_x: matches!(head_attributes.kind, ChimeraPartKind::Tail(_)),
                         ..default()
@@ -215,7 +214,7 @@ pub fn spawn_chimera(
 
             parent
                 .spawn_bundle(SpriteBundle {
-                    texture: asset_server.load(&tail_attributes.texture),
+                    texture: tail_attributes.texture,
                     sprite: Sprite {
                         flip_x: matches!(tail_attributes.kind, ChimeraPartKind::Head(_)),
                         ..default()
