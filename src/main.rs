@@ -11,6 +11,7 @@ mod camera;
 mod chimeras;
 mod constants;
 mod day_cycle;
+mod gameover;
 mod health;
 mod inventory_parts;
 mod main_menu;
@@ -30,6 +31,7 @@ fn main() {
             title: "Chimera Rancher - Rusty Jam #2".to_string(),
             ..Default::default()
         })
+        .insert_resource(ClearColor(Color::rgb_u8(168, 52, 235)))
         .add_plugins(DefaultPlugins)
         .add_plugin(assets_manager::AssetsManagerPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
@@ -47,6 +49,7 @@ fn main() {
         .add_plugin(day_cycle::DayCyclePlugin)
         .add_plugin(health::HealthPlugin)
         .add_plugin(sound_manager::SoundChannelsPlugin)
+        .add_plugin(gameover::GameOverPlugin)
         .add_plugin(TweeningPlugin)
         .add_state(GameStates::AssetsLoading)
         .add_system_set(
