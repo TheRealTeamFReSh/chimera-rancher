@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::states::GameStates;
+use crate::{player::Player, states::GameStates};
 
 pub struct HealthPlugin;
 
@@ -33,6 +33,7 @@ impl Health {
 pub fn health_system(
     mut commands: Commands,
     mut health_query: Query<(Entity, &mut Health)>,
+    player_query: Query<Entity, With<Player>>,
     time: Res<Time>,
 ) {
     for (entity, mut health) in health_query.iter_mut() {
