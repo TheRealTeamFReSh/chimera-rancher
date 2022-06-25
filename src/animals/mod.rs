@@ -25,11 +25,10 @@ impl Plugin for AnimalsPlugin {
                 .label("setup_attributes"),
         );
 
-        app.insert_resource(animal_attr_res)
-            .insert_resource(spawn::AnimalSpawner {
-                spawn_timer: Timer::from_seconds(constants::ANIMAL_BASE_SPAWN_DURATION, false),
-            });
-      
+        app.insert_resource(spawn::AnimalSpawner {
+            spawn_timer: Timer::from_seconds(constants::ANIMAL_BASE_SPAWN_DURATION, false),
+        });
+
         app.add_system_set(SystemSet::on_enter(GameStates::Game).with_system(spawn_test_system));
         app.add_system_set(
             SystemSet::on_update(GameStates::Game)
