@@ -15,6 +15,7 @@ mod day_cycle;
 mod gameover;
 mod health;
 mod helpers;
+mod hud;
 mod inventory_parts;
 mod main_menu;
 mod pause_menu;
@@ -56,6 +57,7 @@ fn main() {
         .add_plugin(sound_manager::SoundChannelsPlugin)
         .add_plugin(spells::SpellsPlugin)
         .add_plugin(gameover::GameOverPlugin)
+        .add_plugin(hud::HudPlugin)
         .add_plugin(TweeningPlugin)
         .add_plugin(projectile::ProjectilePlugin)
         .add_state(GameStates::AssetsLoading)
@@ -65,9 +67,8 @@ fn main() {
                 .with_system(constants::compute_max_stats)
                 .with_system(setup_physics)
                 .with_system(setup_boundaries)
-                .with_system(setup_areas)
                 .with_system(setup_tiles)
-                .with_system(setup_env_obj),
+ //               .with_system(setup_env_obj),
         )
         .add_system_set(
             SystemSet::on_update(GameStates::Game)
@@ -75,7 +76,7 @@ fn main() {
         )
         .run();
 }
-
+/*
 fn setup_env_obj(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -101,12 +102,13 @@ fn setup_env_obj(
         .insert(Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)))
         .insert(Collider::cuboid(16.0, 16.0));
 }
+*/
 
 fn setup_tiles(mut commands: Commands, asset_server: Res<AssetServer>, mut map_query: MapQuery) {
     let grass_handle: bevy::prelude::Handle<Image> = asset_server.load("grass.png");
     // Create map entity and component
     let map_entity = commands.spawn().id();
-    let mut map = Map::new(0u16, map_entity);
+    let mut map = Map::new(0_u16, map_entity);
 
     //Create new layer builder with a layer entity
     let (mut layer_builder, _) = LayerBuilder::new(
@@ -172,31 +174,5 @@ fn setup_boundaries(mut commands: Commands) {
         .insert(Collider::cuboid(20.0, 1500.0))
         .insert_bundle(TransformBundle::from(Transform::from_xyz(1000.0, 0.0, 0.0)));
 
-    //Right river
-    commands
-        .spawn()
-        .insert(Collider::cuboid(450.0, 200.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(530.0, 0.0, 0.0)));
-
-    //Left river
-    commands
-        .spawn()
-        .insert(Collider::cuboid(450.0, 200.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(-530.0, 0.0, 0.0)));
 }
 
-fn setup_areas(mut commands: Commands) {
-    //Human area
-    commands
-        .spawn()
-        .insert(Collider::cuboid(980.0, 640.0))
-        .insert(Sensor(true))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 840.0, 0.0)));
-
-    //Evil area
-    commands
-        .spawn()
-        .insert(Collider::cuboid(980.0, 640.0))
-        .insert(Sensor(true))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, -840.0, 0.0)));
-}

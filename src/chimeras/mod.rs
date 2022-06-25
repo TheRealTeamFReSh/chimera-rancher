@@ -77,7 +77,7 @@ impl Plugin for ChimerasPlugin {
 }
 
 // spawns a random chimera from 2 parts in the player's inventory
-pub fn test_spawn_chimera_system(
+pub fn _test_spawn_chimera_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
     assets: Res<AssetsManager>,
