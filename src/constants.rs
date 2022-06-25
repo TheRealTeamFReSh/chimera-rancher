@@ -20,9 +20,15 @@ pub const HEAD_ATTACK_PERCENT: f32 = 0.7;
 pub const TAIL_ATTACK_PERCENT: f32 = 0.3;
 
 // behaviors
-pub const FOLLOW_RANGE: f32 = 450.0;
-pub const FOLLOW_DISTANCE: f32 = 100.0;
-pub const PURSUE_RANGE: f32 = 250.0;
+pub const CHIMERA_FOLLOW_RANGE: f32 = 450.0;
+pub const CHIMERA_FOLLOW_DISTANCE: f32 = 100.0;
+pub const CHIMERA_PURSUE_RANGE: f32 = 250.0;
+pub const ANIMAL_RUNAWAY_RANGE: f32 = 250.0;
+pub const ANIMAL_IDLE_RANGE: f32 = 500.0;
+pub const CHIMERA_IDLE_DURATION: f32 = 2.0;
+pub const CHIMERA_IDLE_DURATION_SPREAD: f32 = 1.0;
+pub const ANIMAL_IDLE_DURATION: f32 = 2.0;
+pub const ANIMAL_IDLE_DURATION_SPREAD: f32 = 1.0;
 
 // bobbing anim
 pub const ANIMATION_SPEED_FACTOR: f32 = 0.2;

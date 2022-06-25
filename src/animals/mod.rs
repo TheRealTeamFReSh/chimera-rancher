@@ -29,13 +29,6 @@ impl Plugin for AnimalsPlugin {
                 texture: "pig.png".to_string(),
                 head_texture: "pighead.png".to_string(),
                 tail_texture: "pigtail.png".to_string(),
-                behavior: UnitBehavior::Idle {
-                    timer: Timer::from_seconds(2.0, false),
-                    base_duration: 2.5,
-                    duration_spread: 1.0,
-                    direction: Vec2::default(),
-                    is_moving: false,
-                },
             },
         );
         animal_attr_res.insert(
@@ -50,13 +43,6 @@ impl Plugin for AnimalsPlugin {
                 texture: "cow.png".to_string(),
                 head_texture: "cowhead.png".to_string(),
                 tail_texture: "cowtail.png".to_string(),
-                behavior: UnitBehavior::Idle {
-                    timer: Timer::from_seconds(2.0, false),
-                    base_duration: 3.5,
-                    duration_spread: 0.5,
-                    direction: Vec2::default(),
-                    is_moving: false,
-                },
             },
         );
         animal_attr_res.insert(
@@ -71,13 +57,6 @@ impl Plugin for AnimalsPlugin {
                 texture: "dog.png".to_string(),
                 head_texture: "doghead.png".to_string(),
                 tail_texture: "dogtail.png".to_string(),
-                behavior: UnitBehavior::Idle {
-                    timer: Timer::from_seconds(2.0, false),
-                    base_duration: 1.5,
-                    duration_spread: 1.0,
-                    direction: Vec2::default(),
-                    is_moving: false,
-                },
             },
         );
         animal_attr_res.insert(
@@ -92,13 +71,6 @@ impl Plugin for AnimalsPlugin {
                 texture: "chicken.png".to_string(),
                 head_texture: "chickenhead.png".to_string(),
                 tail_texture: "chickentail.png".to_string(),
-                behavior: UnitBehavior::Idle {
-                    timer: Timer::from_seconds(2.0, false),
-                    base_duration: 1.0,
-                    duration_spread: 0.9,
-                    direction: Vec2::default(),
-                    is_moving: false,
-                },
             },
         );
         animal_attr_res.insert(
@@ -113,13 +85,6 @@ impl Plugin for AnimalsPlugin {
                 texture: "horse.png".to_string(),
                 head_texture: "horsehead.png".to_string(),
                 tail_texture: "horsetail.png".to_string(),
-                behavior: UnitBehavior::Idle {
-                    timer: Timer::from_seconds(2.0, false),
-                    base_duration: 6.0,
-                    duration_spread: 2.0,
-                    direction: Vec2::default(),
-                    is_moving: false,
-                },
             },
         );
 
@@ -172,7 +137,6 @@ pub struct AnimalAttributes {
     pub texture: String,
     pub head_texture: String,
     pub tail_texture: String,
-    pub behavior: UnitBehavior,
 }
 
 pub type AnimalAttributesResource = HashMap<AnimalKind, AnimalAttributes>;
@@ -253,7 +217,13 @@ pub fn spawn_animal(
             angvel: 0.0,
         })
         .insert(AnimalComponent {
-            behavior: attributes.behavior.clone(),
+            behavior: UnitBehavior::Idle {
+                timer: Timer::from_seconds(constants::ANIMAL_IDLE_DURATION, false),
+                base_duration: constants::ANIMAL_IDLE_DURATION,
+                duration_spread: constants::ANIMAL_IDLE_DURATION_SPREAD,
+                direction: Vec2::default(),
+                is_moving: false,
+            },
             stats: AnimalStats {
                 attack: rand::thread_rng().gen_range(
                     attributes.attack * (1.0 - constants::STATS_DEVIATION)

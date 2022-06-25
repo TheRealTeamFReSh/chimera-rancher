@@ -5,8 +5,8 @@ use rand::Rng;
 
 use self::behavior::chimera_behavior_system;
 use crate::{
-    animals::AnimalKind, animations::BobbingAnim, behaviors::UnitBehavior, health::Health,
-    player::Player, states::GameStates,
+    animals::AnimalKind, animations::BobbingAnim, behaviors::UnitBehavior, constants,
+    health::Health, player::Player, states::GameStates,
 };
 
 mod behavior;
@@ -154,7 +154,7 @@ pub fn spawn_chimera(
         .insert(ChimeraComponent {
             behavior: UnitBehavior::Follow {
                 target: None,
-                distance: 100.0,
+                distance: constants::CHIMERA_FOLLOW_DISTANCE,
             },
             stats: ChimeraStats {
                 attack: head_attributes.attack + tail_attributes.attack,

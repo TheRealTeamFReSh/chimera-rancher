@@ -65,7 +65,6 @@ pub enum UnitBehavior {
     },
     RunAway {
         target: Option<Vec2>,
-        distance: f32,
     },
 }
 // Handle animal idling behavior
@@ -81,6 +80,7 @@ pub fn idle_behavior(
     stats: UnitStats,
 ) {
     timer.tick(time.delta());
+    let old_linvel = vel.linvel.clone();
 
     if timer.just_finished() {
         timer.set_duration(Duration::from_secs_f32(
@@ -94,13 +94,6 @@ pub fn idle_behavior(
         direction.y = dir[1];
 
         *is_moving ^= true;
-
-        if *is_moving {
-            let flip_val = direction.x < 0.0;
-            for sprite in sprites {
-                sprite.flip_x = flip_val;
-            }
-        }
     }
 
     if *is_moving {
@@ -129,6 +122,12 @@ pub fn idle_behavior(
             vel.linvel.y += stats.decel * direction.y.abs();
         }
     }
+
+    if old_linvel.x.is_sign_positive() != vel.linvel.x.is_sign_positive() {
+        for sprite in sprites {
+            sprite.flip_x ^= true;
+        }
+    }
 }
 
 // Handle pursue behavior
@@ -141,6 +140,7 @@ pub fn pursue_behavior(
 ) {
     if let Some(target) = target {
         let direction = (target - position).normalize();
+        let old_linvel = vel.linvel.clone();
 
         vel.linvel.x += stats.accel * direction.x;
         vel.linvel.y += stats.accel * direction.y;
@@ -152,8 +152,10 @@ pub fn pursue_behavior(
             vel.linvel.y = stats.speed * direction.y;
         }
 
-        for sprite in sprites {
-            sprite.flip_x = direction.x < 0.0;
+        if old_linvel.x.is_sign_positive() != vel.linvel.x.is_sign_positive() {
+            for sprite in sprites {
+                sprite.flip_x ^= true;
+            }
         }
     }
 }
@@ -169,6 +171,8 @@ pub fn follow_behavior(
 ) {
     if let Some(target) = target {
         let direction = (target - position).normalize();
+
+        let old_linvel = vel.linvel.clone();
 
         if position.distance(target) > distance {
             vel.linvel.x += stats.accel * direction.x;
@@ -191,8 +195,40 @@ pub fn follow_behavior(
             vel.linvel.y = stats.speed * direction.y;
         }
 
-        for sprite in sprites {
-            sprite.flip_x = direction.x < 0.0;
+        if old_linvel.x.is_sign_positive() != vel.linvel.x.is_sign_positive() {
+            for sprite in sprites {
+                sprite.flip_x ^= true;
+            }
+        }
+    }
+}
+
+// Handle pursue behavior
+pub fn run_away_behavior(
+    vel: &mut Velocity,
+    sprites: Vec<&mut Sprite>,
+    stats: UnitStats,
+    position: Vec2,
+    target: Option<Vec2>,
+) {
+    if let Some(target) = target {
+        let direction = (position - target).normalize();
+        let old_linvel = vel.linvel.clone();
+
+        vel.linvel.x += stats.accel * direction.x;
+        vel.linvel.y += stats.accel * direction.y;
+
+        if vel.linvel.x.abs() > stats.speed * direction.x.abs() {
+            vel.linvel.x = stats.speed * direction.x;
+        }
+        if vel.linvel.y.abs() > stats.speed * direction.y.abs() {
+            vel.linvel.y = stats.speed * direction.y;
+        }
+
+        if old_linvel.x.is_sign_positive() != vel.linvel.x.is_sign_positive() {
+            for sprite in sprites {
+                sprite.flip_x ^= true;
+            }
         }
     }
 }
