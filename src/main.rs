@@ -18,6 +18,7 @@ mod inventory_parts;
 mod main_menu;
 mod pause_menu;
 mod player;
+mod projectile;
 mod sound_manager;
 mod spells;
 mod states;
@@ -53,6 +54,7 @@ fn main() {
         .add_plugin(sound_manager::SoundChannelsPlugin)
         .add_plugin(spells::SpellsPlugin)
         .add_plugin(TweeningPlugin)
+        .add_plugin(projectile::ProjectilePlugin)
         .add_state(GameStates::AssetsLoading)
         .add_system_set(
             SystemSet::on_enter(GameStates::Game)
@@ -98,7 +100,7 @@ fn setup_env_obj(
 }
 
 fn setup_tiles(mut commands: Commands, asset_server: Res<AssetServer>, mut map_query: MapQuery) {
-    let grass_handle: bevy::prelude::Handle<Image> = asset_server.load("grass2.png");
+    let grass_handle: bevy::prelude::Handle<Image> = asset_server.load("grass.png");
     // Create map entity and component
     let map_entity = commands.spawn().id();
     let mut map = Map::new(0u16, map_entity);
