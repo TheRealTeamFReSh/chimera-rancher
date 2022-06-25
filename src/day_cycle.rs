@@ -38,7 +38,7 @@ pub struct DayCycleResource {
 
 impl DayCycleResource {
     pub fn get_alpha(&self) -> f32 {
-        let x = self.day_timer.elapsed_secs();
+        let x = self.get_hour() as f32 + self.get_minute() as f32 / 60.;
         let fx = f32::max(f32::min(f32::cos(x * 2. * PI / 24. - 0.5) * 1.8, 1.), 0.);
 
         // linear regression
@@ -71,7 +71,7 @@ fn day_cycle_system(
     }
 
     for mut uicolor in lighting_query.iter_mut() {
-        log::trace!(
+        log::info!(
             "day {} hour: {} minute: {} => alpha: {}",
             day_cycle_resource.days_passed,
             day_cycle_resource.get_hour(),
