@@ -13,6 +13,7 @@ mod health;
 mod inventory_parts;
 mod pause_menu;
 mod player;
+mod projectile;
 mod states;
 mod stats_window;
 mod villagers;
@@ -39,6 +40,7 @@ fn main() {
         .add_plugin(inventory_parts::InventoryUIPlugin)
         .add_plugin(pause_menu::PauseMenuPlugin)
         .add_plugin(TweeningPlugin)
+        .add_plugin(projectile::ProjectilePlugin)
         .add_state(GameStates::Game)
         .add_system_set(
             SystemSet::on_enter(GameStates::Game)
