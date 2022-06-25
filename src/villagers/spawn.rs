@@ -2,8 +2,7 @@ use bevy::prelude::*;
 
 use super::spawn_villager;
 use crate::constants::{
-    self, ANIMAL_BASE_SPAWN_DURATION, VILLAGER_BASE_SPAWN_DURATION, VILLAGER_SPAWN_HOURS,
-    VILLAGER_SPAWN_LOCATIONS,
+    self, VILLAGER_BASE_SPAWN_DURATION, VILLAGER_SPAWN_HOURS, VILLAGER_SPAWN_LOCATIONS,
 };
 use crate::day_cycle::DayCycleResource;
 use rand::Rng;

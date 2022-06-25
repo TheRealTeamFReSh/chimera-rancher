@@ -55,7 +55,7 @@ pub struct VillagerComponent {
 #[derive(Component)]
 pub struct VillagerSprite;
 
-fn spawn_test_villager_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_test_villager_system(mut _commands: Commands, _asset_server: Res<AssetServer>) {
     /*
     spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
     spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
