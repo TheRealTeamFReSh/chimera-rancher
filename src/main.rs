@@ -37,7 +37,7 @@ fn main() {
 }
 
 fn setup_tiles(mut commands: Commands, asset_server: Res<AssetServer>, mut map_query: MapQuery) {
-    let grass_handle: bevy::prelude::Handle<Image> = asset_server.load("grass.png");
+    let grass_handle: bevy::prelude::Handle<Image> = asset_server.load("grass2.png");
     // Create map entity and component
     let map_entity = commands.spawn().id();
     let mut map = Map::new(0u16, map_entity);
