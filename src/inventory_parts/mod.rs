@@ -1,19 +1,33 @@
 use bevy::{prelude::*, ui::widget::ImageMode};
 
 use crate::{
-    assets_manager::AssetsManager, chimeras::ChimeraPartKind, constants, player::Player,
+    assets_manager::AssetsManager,
+    chimeras::{ChimeraPartAttributes, ChimeraPartKind},
+    constants,
+    player::Player,
     states::GameStates,
 };
+
+use self::interaction::InventoryManagement;
+
+pub mod interaction;
 
 pub struct InventoryUIPlugin;
 
 impl Plugin for InventoryUIPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_resource(InventoryManagement::default());
+
         // on enter
         app.add_system_set(SystemSet::on_enter(GameStates::Game).with_system(setup_ui));
 
         // on update
-        app.add_system_set(SystemSet::on_update(GameStates::Game).with_system(update_ui));
+        app.add_system_set(
+            SystemSet::on_update(GameStates::Game)
+                .with_system(update_ui)
+                .with_system(interaction::handle_click)
+                .with_system(interaction::set_selected_items),
+        );
     }
 }
 
@@ -67,25 +81,45 @@ fn update_ui(
     mut commands: Commands,
     q_container: Query<Entity, With<PartInventoryContainer>>,
     q_player: Query<&Player>,
+    mut inv_man: ResMut<InventoryManagement>,
 ) {
-    for cont_ent in q_container.iter() {
-        // start by cleaning
-        let mut container = commands.entity(cont_ent);
-        container.despawn_descendants();
+    for player in q_player.iter() {
+        // if inventory changed
+        if inv_man.last_inv_size != player.inventory.chimera_parts.len() {
+            // set new inventory length
+            inv_man.last_inv_size = player.inventory.chimera_parts.len();
 
-        // add the parts
-        container.with_children(|parent| {
-            for player in q_player.iter() {
-                for part in player.inventory.chimera_parts.iter() {
-                    let is_head = matches!(part.kind, ChimeraPartKind::Head(_));
-                    create_item_icon(parent, &part.texture, is_head)
-                }
+            // reset the references
+            inv_man.reset();
+
+            for cont_ent in q_container.iter() {
+                // start by cleaning
+                let mut container = commands.entity(cont_ent);
+                container.despawn_descendants();
+
+                // add the parts
+                container.with_children(|parent| {
+                    for part in player.inventory.chimera_parts.iter() {
+                        let is_head = matches!(part.kind, ChimeraPartKind::Head(_));
+                        create_item_icon(parent, &part.texture, is_head, part.clone())
+                    }
+                });
             }
-        });
+        }
     }
 }
 
-fn create_item_icon(parent: &mut ChildBuilder, handle: &Handle<Image>, is_head: bool) {
+#[derive(Component)]
+pub struct InventoryItem {
+    pub part: ChimeraPartAttributes,
+}
+
+fn create_item_icon(
+    parent: &mut ChildBuilder,
+    handle: &Handle<Image>,
+    is_head: bool,
+    part: ChimeraPartAttributes,
+) {
     parent
         .spawn_bundle(NodeBundle {
             style: Style {
@@ -104,21 +138,22 @@ fn create_item_icon(parent: &mut ChildBuilder, handle: &Handle<Image>, is_head: 
             ..default()
         })
         .with_children(|parent| {
-            parent.spawn_bundle(ImageBundle {
-                image: handle.clone().into(),
-                image_mode: ImageMode::KeepAspect,
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    position: Rect {
-                        left: Val::Px(if is_head { -48. } else { 0. }),
-                        right: Val::Auto,
-                        top: Val::Px(0.),
-                        bottom: Val::Auto,
+            parent
+                .spawn_bundle(ButtonBundle {
+                    image: handle.clone().into(),
+                    style: Style {
+                        position_type: PositionType::Absolute,
+                        position: Rect {
+                            left: Val::Px(if is_head { -48. } else { 0. }),
+                            right: Val::Auto,
+                            top: Val::Px(0.),
+                            bottom: Val::Auto,
+                        },
+                        size: Size::new(Val::Px(96.), Val::Px(48.)),
+                        ..Default::default()
                     },
-                    size: Size::new(Val::Px(96.), Val::Px(48.)),
                     ..Default::default()
-                },
-                ..Default::default()
-            });
+                })
+                .insert(InventoryItem { part });
         });
 }

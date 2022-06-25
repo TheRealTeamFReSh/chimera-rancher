@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_kira_audio::AudioChannel;
 use bevy_rapier2d::prelude::*;
-use rand::prelude::SliceRandom;
 use rand::Rng;
 
 use self::behavior::chimera_behavior_system;
@@ -12,6 +11,7 @@ use crate::{
     behaviors::{self, UnitBehavior},
     constants,
     health::Health,
+    inventory_parts::interaction::InventoryManagement,
     player::Player,
     sound_manager::SpawnChimeraAudioChannel,
     states::GameStates,
@@ -83,57 +83,49 @@ pub fn test_spawn_chimera_system(
     assets: Res<AssetsManager>,
     mut player_query: Query<(&mut Player, &Transform)>,
     spawn_audio: Res<AudioChannel<SpawnChimeraAudioChannel>>,
+    mut inv_man: ResMut<InventoryManagement>,
 ) {
     let capture_input = keyboard_input.just_pressed(KeyCode::P);
 
     if capture_input {
-        if let Some((mut player, player_transform)) = player_query.iter_mut().next() {
-            if player.inventory.chimera_parts.len() >= 2 {
-                // pick 2 random chimera parts to combine
-                let head_part = player
-                    .inventory
-                    .chimera_parts
-                    .choose(&mut rand::thread_rng())
-                    .unwrap()
-                    .clone();
+        // if there are 2 items selected
+        if let Some((_, part1)) = inv_man.target_1.selection.clone() {
+            if let Some((_, part2)) = inv_man.target_2.selection.clone() {
+                if let Some((mut player, player_transform)) = player_query.iter_mut().next() {
+                    let part_1_idx = player
+                        .inventory
+                        .chimera_parts
+                        .iter()
+                        .position(|part| part == &part1)
+                        .unwrap();
 
-                let head_part_idx = player
-                    .inventory
-                    .chimera_parts
-                    .iter()
-                    .position(|part| part == &head_part)
-                    .unwrap();
+                    player.inventory.chimera_parts.remove(part_1_idx);
 
-                player.inventory.chimera_parts.remove(head_part_idx);
+                    let part_2_idx = player
+                        .inventory
+                        .chimera_parts
+                        .iter()
+                        .position(|part| part == &part2)
+                        .unwrap();
 
-                let tail_part = player
-                    .inventory
-                    .chimera_parts
-                    .choose(&mut rand::thread_rng())
-                    .unwrap()
-                    .clone();
+                    player.inventory.chimera_parts.remove(part_2_idx);
 
-                let tail_part_idx = player
-                    .inventory
-                    .chimera_parts
-                    .iter()
-                    .position(|part| part == &tail_part)
-                    .unwrap();
+                    // reset inv_man
+                    inv_man.reset();
 
-                player.inventory.chimera_parts.remove(tail_part_idx);
+                    // play audio
+                    spawn_audio.set_playback_rate(rand::thread_rng().gen_range(0.7..1.8));
+                    spawn_audio.play(assets.sound_spawn_chimera.clone());
 
-                // play audio
-                spawn_audio.set_playback_rate(rand::thread_rng().gen_range(0.7..1.8));
-                spawn_audio.play(assets.sound_spawn_chimera.clone());
-
-                spawn_chimera(
-                    (head_part, tail_part),
-                    Vec2::new(
-                        player_transform.translation.x,
-                        player_transform.translation.y + 150.0,
-                    ),
-                    &mut commands,
-                )
+                    spawn_chimera(
+                        (part1, part2),
+                        Vec2::new(
+                            player_transform.translation.x,
+                            player_transform.translation.y + 150.0,
+                        ),
+                        &mut commands,
+                    )
+                }
             }
         }
     }
