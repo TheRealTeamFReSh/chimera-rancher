@@ -69,6 +69,7 @@ fn day_cycle_system(
     if day_cycle_resource.day_timer.just_finished() {
         day_cycle_resource.days_passed += 1;
     }
+
     for mut uicolor in lighting_query.iter_mut() {
         log::trace!(
             "day {} hour: {} minute: {} => alpha: {}",

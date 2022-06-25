@@ -9,7 +9,7 @@ pub const Z_UI: f32 = 100.;
 pub const Z_DAY_CYCLE: f32 = 50.;
 
 // day-night cycle
-pub const DAY_LENGTH: f32 = 240.0;
+pub const DAY_LENGTH: f32 = 300.0; // in seconds
 pub const STARTING_HOUR: f32 = 8.0;
 pub const MAX_ALPHA: f32 = 0.85;
 pub const MIN_ALPHA: f32 = 0.1;

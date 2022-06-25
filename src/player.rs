@@ -157,6 +157,11 @@ fn capture_animal(
 
     if capture_input {
         for (player_transform, mut player) in player_query.iter_mut() {
+            // prevent the player from capturing more than 10 parts
+            if player.inventory.chimera_parts.len() >= 10 {
+                continue;
+            }
+
             let player_pos = player_transform.translation;
 
             for (animal_transform, animal, animal_entity) in animal_query.iter() {

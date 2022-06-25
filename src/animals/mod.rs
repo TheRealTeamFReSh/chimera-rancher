@@ -200,6 +200,22 @@ fn spawn_test_system(
         &mut commands,
         &asset_server,
     );
+
+    spawn_animal(
+        &AnimalKind::Chicken,
+        Vec2::new(300.0, 70.0),
+        &animal_attr_res,
+        &mut commands,
+        &asset_server,
+    );
+
+    spawn_animal(
+        &AnimalKind::Chicken,
+        Vec2::new(200.0, 50.0),
+        &animal_attr_res,
+        &mut commands,
+        &asset_server,
+    );
 }
 
 // Spawn the indicated animal at the position
