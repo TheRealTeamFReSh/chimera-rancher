@@ -94,7 +94,7 @@ fn entity_click_detection(
     mut stats_window: ResMut<StatsWindow>,
     mut commands: Commands,
 ) {
-    if mouse_button.just_pressed(MouseButton::Left) {
+    if mouse_button.just_pressed(MouseButton::Right) {
         // detroy the previous target
         if let Some(target_entity) = stats_window.cursor {
             commands.entity(target_entity).despawn();

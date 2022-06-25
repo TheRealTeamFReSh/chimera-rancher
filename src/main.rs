@@ -21,6 +21,7 @@ mod pause_menu;
 mod player;
 mod projectile;
 mod sound_manager;
+mod spells;
 mod states;
 mod stats_window;
 mod villagers;
@@ -53,6 +54,7 @@ fn main() {
         .add_plugin(day_cycle::DayCyclePlugin)
         .add_plugin(health::HealthPlugin)
         .add_plugin(sound_manager::SoundChannelsPlugin)
+        .add_plugin(spells::SpellsPlugin)
         .add_plugin(gameover::GameOverPlugin)
         .add_plugin(TweeningPlugin)
         .add_plugin(projectile::ProjectilePlugin)
