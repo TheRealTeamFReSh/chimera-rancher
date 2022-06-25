@@ -85,6 +85,8 @@ pub struct MaxStats {
     pub attack: f32,
     pub speed: f32,
     pub health: f32,
+    pub regen: f32,
+    pub range: f32,
 }
 
 pub fn compute_max_stats(
@@ -99,6 +101,8 @@ pub fn compute_max_stats(
         maxi.attack = f32::max(maxi.attack, attr.attack * 1.5);
         maxi.speed = f32::max(maxi.speed, attr.speed * 1.5);
         maxi.health = f32::max(maxi.health, attr.health * 1.5);
+        maxi.regen = f32::max(maxi.regen, attr.regen * 1.5);
+        maxi.range = f32::max(maxi.range, attr.range * 1.5);
     }
 
     commands.insert_resource(maxi);
