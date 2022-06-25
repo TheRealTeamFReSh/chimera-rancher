@@ -50,7 +50,7 @@ pub fn spawn_villager(position: Vec2, commands: &mut Commands, asset_server: &As
 
     commands
         .spawn_bundle(TransformBundle::from(Transform::from_translation(
-            position.extend(0.0),
+            position.extend(1.0),
         )))
         .insert(Velocity::default())
         .insert(VillagerComponent {
