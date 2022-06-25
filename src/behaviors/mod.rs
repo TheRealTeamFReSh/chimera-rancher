@@ -10,6 +10,10 @@ use crate::villagers::VillagerStats;
 
 const ROUND_ZERO_RANGE: f32 = 10.0;
 
+mod attack;
+
+pub use self::attack::villager_attack_system;
+
 pub struct UnitStats {
     pub speed: f32,
     pub accel: f32,
@@ -80,7 +84,7 @@ pub fn idle_behavior(
     stats: UnitStats,
 ) {
     timer.tick(time.delta());
-    let old_linvel = vel.linvel.clone();
+    let old_linvel = vel.linvel;
 
     if timer.just_finished() {
         timer.set_duration(Duration::from_secs_f32(
@@ -140,7 +144,7 @@ pub fn pursue_behavior(
 ) {
     if let Some(target) = target {
         let direction = (target - position).normalize();
-        let old_linvel = vel.linvel.clone();
+        let old_linvel = vel.linvel;
 
         vel.linvel.x += stats.accel * direction.x;
         vel.linvel.y += stats.accel * direction.y;
@@ -172,7 +176,7 @@ pub fn follow_behavior(
     if let Some(target) = target {
         let direction = (target - position).normalize();
 
-        let old_linvel = vel.linvel.clone();
+        let old_linvel = vel.linvel;
 
         if position.distance(target) > distance {
             vel.linvel.x += stats.accel * direction.x;
@@ -213,7 +217,7 @@ pub fn run_away_behavior(
 ) {
     if let Some(target) = target {
         let direction = (position - target).normalize();
-        let old_linvel = vel.linvel.clone();
+        let old_linvel = vel.linvel;
 
         vel.linvel.x += stats.accel * direction.x;
         vel.linvel.y += stats.accel * direction.y;

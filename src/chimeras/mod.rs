@@ -19,7 +19,8 @@ pub enum ChimeraPartKind {
 
 #[derive(Component)]
 pub struct ChimeraComponent {
-    behavior: UnitBehavior,
+    pub behavior: UnitBehavior,
+    pub damage_timer: Timer,
     pub stats: ChimeraStats,
 }
 
@@ -30,6 +31,7 @@ pub struct ChimeraStats {
     pub decel: f32,
     pub health: f32,
     pub attack: f32,
+    pub regen: f32,
 }
 
 // used for passing data from animals to chimeras
@@ -40,6 +42,7 @@ pub struct ChimeraPartAttributes {
     pub decel: f32,
     pub health: f32,
     pub attack: f32,
+    pub regen: f32,
     pub collider_size: Vec2,
     pub texture: String,
     pub kind: ChimeraPartKind,
@@ -140,6 +143,7 @@ pub fn spawn_chimera(
     }
 
     let chimera_health = head_attributes.health + tail_attributes.health;
+    let chimera_regen = head_attributes.regen + tail_attributes.regen;
 
     // spawn the chimera
     commands
@@ -152,6 +156,7 @@ pub fn spawn_chimera(
             angvel: 0.0,
         })
         .insert(ChimeraComponent {
+            damage_timer: Timer::from_seconds(0.3, true),
             behavior: UnitBehavior::Follow {
                 target: None,
                 distance: constants::CHIMERA_FOLLOW_DISTANCE,
@@ -162,15 +167,17 @@ pub fn spawn_chimera(
                 accel: head_attributes.accel + tail_attributes.accel,
                 decel: head_attributes.decel + tail_attributes.decel,
                 health: chimera_health,
+                regen: chimera_regen,
             },
         })
-        .insert(Health::new(chimera_health))
+        .insert(Health::new(chimera_health, 1.0, 1.0))
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(
             head_attributes.collider_size.x / 2.0 + tail_attributes.collider_size.x / 2.0,
             head_attributes.collider_size.y,
         ))
         .insert(LockedAxes::ROTATION_LOCKED)
+        .insert(ActiveEvents::COLLISION_EVENTS)
         .with_children(|parent| {
             let bobbing_anim_val = rand::thread_rng().gen::<f32>() * 32.0;
 

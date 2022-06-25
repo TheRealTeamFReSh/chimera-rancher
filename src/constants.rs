@@ -18,6 +18,8 @@ pub const HEAD_HEALTH_PERCENT: f32 = 0.50;
 pub const TAIL_HEALTH_PERCENT: f32 = 0.50;
 pub const HEAD_ATTACK_PERCENT: f32 = 0.7;
 pub const TAIL_ATTACK_PERCENT: f32 = 0.3;
+pub const HEAD_REGEN_PERECENT: f32 = 0.5;
+pub const TAIL_REGEN_PERECENT: f32 = 0.5;
 
 // behaviors
 pub const CHIMERA_FOLLOW_RANGE: f32 = 450.0;
@@ -29,6 +31,8 @@ pub const CHIMERA_IDLE_DURATION: f32 = 2.0;
 pub const CHIMERA_IDLE_DURATION_SPREAD: f32 = 1.0;
 pub const ANIMAL_IDLE_DURATION: f32 = 2.0;
 pub const ANIMAL_IDLE_DURATION_SPREAD: f32 = 1.0;
+pub const ANIMAL_REGEN_RATE: f32 = 2.0;
+pub const VILLAGER_REGEN_RATE: f32 = 2.0;
 
 // bobbing anim
 pub const ANIMATION_SPEED_FACTOR: f32 = 0.2;
@@ -36,10 +40,6 @@ pub const ANIMATION_OFFSET_FACTOR: f32 = 4.0;
 
 // stats
 pub const STATS_DEVIATION: f32 = 0.5;
-pub const DEFAULT_HEALTH: Health = Health {
-    health: 0.,
-    max_health: 0.,
-};
 
 // compute maximal values
 #[derive(Default)]

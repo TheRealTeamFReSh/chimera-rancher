@@ -25,6 +25,14 @@ pub fn chimera_behavior_system(
 
         let (sprite_1, sprite_2) = sprites.split_at_mut(1);
 
+        if sprite_1[0].color.r() > 1.0 {
+            chimera.damage_timer.tick(time.delta());
+            if chimera.damage_timer.just_finished() {
+                sprite_1[0].color.set_r(1.0);
+                sprite_2[0].color.set_r(1.0);
+            }
+        }
+
         let stats = chimera.stats;
 
         let player_transform = player_query.iter().next().unwrap();

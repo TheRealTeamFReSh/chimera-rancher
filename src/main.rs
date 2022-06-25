@@ -38,6 +38,7 @@ fn main() {
         .add_plugin(stats_window::StatsWindowPlugin)
         .add_plugin(inventory_parts::InventoryUIPlugin)
         .add_plugin(pause_menu::PauseMenuPlugin)
+        .add_plugin(health::HealthPlugin)
         .add_plugin(TweeningPlugin)
         .add_state(GameStates::Game)
         .add_system_set(

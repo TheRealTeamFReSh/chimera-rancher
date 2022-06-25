@@ -170,6 +170,7 @@ fn capture_animal(
                     let chimera_attr_head = ChimeraPartAttributes {
                         attack: animal_stats.attack * constants::HEAD_ATTACK_PERCENT,
                         health: animal_stats.health * constants::HEAD_HEALTH_PERCENT,
+                        regen: animal_stats.regen * constants::HEAD_REGEN_PERECENT,
                         speed: animal_stats.speed * constants::HEAD_SPEED_PERCENT,
                         accel: animal_stats.accel * constants::HEAD_ACCEL_PERCENT,
                         decel: animal_stats.decel * constants::HEAD_DECEL_PERCENT,
@@ -180,6 +181,7 @@ fn capture_animal(
                     let chimera_attr_tail = ChimeraPartAttributes {
                         attack: animal_stats.attack * constants::TAIL_ATTACK_PERCENT,
                         health: animal_stats.health * constants::TAIL_HEALTH_PERCENT,
+                        regen: animal_stats.regen * constants::TAIL_REGEN_PERECENT,
                         speed: animal_stats.speed * constants::TAIL_SPEED_PERCENT,
                         accel: animal_stats.accel * constants::TAIL_ACCEL_PERCENT,
                         decel: animal_stats.decel * constants::TAIL_DECEL_PERCENT,
