@@ -7,7 +7,6 @@ use crate::{
     chimeras::ChimeraComponent,
     constants::{self, MaxStats},
     health::Health,
-    player::Player,
 };
 
 use super::{ui_bars::*, EntityType, StatsWindow};
@@ -43,12 +42,9 @@ pub fn update_window_stats(
         (With<MaxBarComponent>, Without<ValueBarComponent>),
     >,
     mut q_ui_bar_value: Query<&mut Style, With<ValueBarComponent>>,
-    q_player: Query<&Player>,
 ) {
     if let Some(target_entity) = stats_window.target {
         // get the player
-        let player = q_player.get_single().unwrap();
-
         let zero_health = Health {
             health: 0.,
             max_health: 0.,
