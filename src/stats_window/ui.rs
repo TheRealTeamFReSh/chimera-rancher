@@ -43,6 +43,12 @@ pub fn update_window_stats(
     mut q_ui_bar_value: Query<&mut Style, With<ValueBarComponent>>,
 ) {
     if let Some(target_entity) = stats_window.target {
+        let zero_health = Health {
+            health: 0.,
+            max_health: 0.,
+            regen: 0.,
+            regen_timer: Timer::from_seconds(0.0, false),
+        };
         // get the stats
         let (health, accel, decel, attack, speed) =
             if stats_window.target_type == EntityType::Chimera {
@@ -50,15 +56,13 @@ pub fn update_window_stats(
                     let stats = chimera.stats;
                     (health, stats.accel, stats.decel, stats.attack, stats.speed)
                 } else {
-                    (&constants::DEFAULT_HEALTH, 0., 0., 0., 0.)
+                    (&zero_health, 0., 0., 0., 0.)
                 }
+            } else if let Ok((health, animal)) = q_animal.get(target_entity) {
+                let stats = animal.stats;
+                (health, stats.accel, stats.decel, stats.attack, stats.speed)
             } else {
-                if let Ok((health, animal)) = q_animal.get(target_entity) {
-                    let stats = animal.stats;
-                    (health, stats.accel, stats.decel, stats.attack, stats.speed)
-                } else {
-                    (&constants::DEFAULT_HEALTH, 0., 0., 0., 0.)
-                }
+                (&zero_health, 0., 0., 0., 0.)
             };
 
         // if the values are null, the entity does not exist anymore

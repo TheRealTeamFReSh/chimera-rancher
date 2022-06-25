@@ -25,17 +25,12 @@ impl Plugin for AnimalsPlugin {
                 decel: 6.0,
                 health: 120.0,
                 attack: 10.0,
+                regen: 1.0,
+                range: 150.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "pig.png".to_string(),
                 head_texture: "pighead.png".to_string(),
                 tail_texture: "pigtail.png".to_string(),
-                behavior: UnitBehavior::Idle {
-                    timer: Timer::from_seconds(2.0, false),
-                    base_duration: 2.5,
-                    duration_spread: 1.0,
-                    direction: Vec2::default(),
-                    is_moving: false,
-                },
             },
         );
         animal_attr_res.insert(
@@ -46,17 +41,12 @@ impl Plugin for AnimalsPlugin {
                 decel: 6.0,
                 attack: 8.0,
                 health: 150.0,
+                regen: 2.0,
+                range: 150.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "cow.png".to_string(),
                 head_texture: "cowhead.png".to_string(),
                 tail_texture: "cowtail.png".to_string(),
-                behavior: UnitBehavior::Idle {
-                    timer: Timer::from_seconds(2.0, false),
-                    base_duration: 3.5,
-                    duration_spread: 0.5,
-                    direction: Vec2::default(),
-                    is_moving: false,
-                },
             },
         );
         animal_attr_res.insert(
@@ -67,17 +57,12 @@ impl Plugin for AnimalsPlugin {
                 decel: 6.0,
                 attack: 15.0,
                 health: 100.0,
+                regen: 0.7,
+                range: 150.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "dog.png".to_string(),
                 head_texture: "doghead.png".to_string(),
                 tail_texture: "dogtail.png".to_string(),
-                behavior: UnitBehavior::Idle {
-                    timer: Timer::from_seconds(2.0, false),
-                    base_duration: 1.5,
-                    duration_spread: 1.0,
-                    direction: Vec2::default(),
-                    is_moving: false,
-                },
             },
         );
         animal_attr_res.insert(
@@ -88,17 +73,12 @@ impl Plugin for AnimalsPlugin {
                 decel: 6.0,
                 health: 75.0,
                 attack: 18.0,
+                regen: 0.7,
+                range: 150.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "chicken.png".to_string(),
                 head_texture: "chickenhead.png".to_string(),
                 tail_texture: "chickentail.png".to_string(),
-                behavior: UnitBehavior::Idle {
-                    timer: Timer::from_seconds(2.0, false),
-                    base_duration: 1.0,
-                    duration_spread: 0.9,
-                    direction: Vec2::default(),
-                    is_moving: false,
-                },
             },
         );
         animal_attr_res.insert(
@@ -109,17 +89,12 @@ impl Plugin for AnimalsPlugin {
                 decel: 6.0,
                 health: 140.0,
                 attack: 12.0,
+                regen: 1.0,
+                range: 150.0,
                 collider_size: Vec2::new(20.0, 10.0),
                 texture: "horse.png".to_string(),
                 head_texture: "horsehead.png".to_string(),
                 tail_texture: "horsetail.png".to_string(),
-                behavior: UnitBehavior::Idle {
-                    timer: Timer::from_seconds(2.0, false),
-                    base_duration: 6.0,
-                    duration_spread: 2.0,
-                    direction: Vec2::default(),
-                    is_moving: false,
-                },
             },
         );
 
@@ -160,6 +135,8 @@ pub struct AnimalStats {
     pub kind: AnimalKind,
     pub health: f32,
     pub attack: f32,
+    pub regen: f32,
+    pub range: f32,
 }
 
 pub struct AnimalAttributes {
@@ -168,11 +145,12 @@ pub struct AnimalAttributes {
     pub decel: f32,
     pub attack: f32,
     pub health: f32,
+    pub regen: f32,
+    pub range: f32,
     pub collider_size: Vec2,
     pub texture: String,
     pub head_texture: String,
     pub tail_texture: String,
-    pub behavior: UnitBehavior,
 }
 
 pub type AnimalAttributesResource = HashMap<AnimalKind, AnimalAttributes>;
@@ -244,6 +222,11 @@ pub fn spawn_animal(
             ..attributes.health * (1.0 + constants::STATS_DEVIATION),
     );
 
+    let animal_regen = rand::thread_rng().gen_range(
+        attributes.regen * (1.0 - constants::STATS_DEVIATION)
+            ..attributes.regen * (1.0 + constants::STATS_DEVIATION),
+    );
+
     commands
         .spawn_bundle(TransformBundle::from(Transform::from_translation(
             position.extend(0.0),
@@ -253,11 +236,21 @@ pub fn spawn_animal(
             angvel: 0.0,
         })
         .insert(AnimalComponent {
-            behavior: attributes.behavior.clone(),
+            behavior: UnitBehavior::Idle {
+                timer: Timer::from_seconds(constants::ANIMAL_IDLE_DURATION, false),
+                base_duration: constants::ANIMAL_IDLE_DURATION,
+                duration_spread: constants::ANIMAL_IDLE_DURATION_SPREAD,
+                direction: Vec2::default(),
+                is_moving: false,
+            },
             stats: AnimalStats {
                 attack: rand::thread_rng().gen_range(
                     attributes.attack * (1.0 - constants::STATS_DEVIATION)
                         ..attributes.attack * (1.0 + constants::STATS_DEVIATION),
+                ),
+                range: rand::thread_rng().gen_range(
+                    attributes.range * (1.0 - constants::STATS_DEVIATION)
+                        ..attributes.range * (1.0 + constants::STATS_DEVIATION),
                 ),
                 speed: rand::thread_rng().gen_range(
                     attributes.speed * (1.0 - constants::STATS_DEVIATION)
@@ -272,10 +265,15 @@ pub fn spawn_animal(
                         ..attributes.decel * (1.0 + constants::STATS_DEVIATION),
                 ),
                 health: animal_health,
+                regen: animal_regen,
                 kind: *animal_kind,
             },
         })
-        .insert(Health::new(animal_health))
+        .insert(Health::new(
+            animal_health,
+            animal_regen,
+            constants::ANIMAL_REGEN_RATE,
+        ))
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(
             attributes.collider_size.x,
