@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_kira_audio::AudioChannel;
 use bevy_rapier2d::prelude::*;
 use rand::prelude::SliceRandom;
 use rand::Rng;
@@ -11,6 +12,7 @@ use crate::{
     constants,
     health::Health,
     player::Player,
+    sound_manager::SpawnChimeraAudioChannel,
     states::GameStates,
 };
 
@@ -79,6 +81,7 @@ pub fn test_spawn_chimera_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut player_query: Query<(&mut Player, &Transform)>,
+    spawn_audio: Res<AudioChannel<SpawnChimeraAudioChannel>>,
 ) {
     let capture_input = keyboard_input.just_pressed(KeyCode::P);
 
@@ -117,6 +120,10 @@ pub fn test_spawn_chimera_system(
                     .unwrap();
 
                 player.inventory.chimera_parts.remove(tail_part_idx);
+
+                // play audio
+                spawn_audio.set_playback_rate(rand::thread_rng().gen_range(0.7..1.8));
+                spawn_audio.play(asset_server.load("sounds/spawn_chimera.ogg"));
 
                 spawn_chimera(
                     (head_part, tail_part),

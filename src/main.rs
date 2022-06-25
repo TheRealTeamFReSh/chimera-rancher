@@ -15,6 +15,7 @@ mod inventory_parts;
 mod main_menu;
 mod pause_menu;
 mod player;
+mod sound_manager;
 mod states;
 mod stats_window;
 mod villagers;
@@ -43,6 +44,7 @@ fn main() {
         .add_plugin(pause_menu::PauseMenuPlugin)
         .add_plugin(day_cycle::DayCyclePlugin)
         .add_plugin(health::HealthPlugin)
+        .add_plugin(sound_manager::SoundChannelsPlugin)
         .add_plugin(TweeningPlugin)
         .add_state(GameStates::MainMenu)
         .add_system_set(

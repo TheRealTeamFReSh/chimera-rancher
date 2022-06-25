@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_kira_audio::AudioChannel;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
@@ -6,6 +7,7 @@ use crate::{
     camera::CameraTarget,
     chimeras::{ChimeraPartAttributes, ChimeraPartKind},
     constants,
+    sound_manager::FootstepAudioChannel,
     states::GameStates,
 };
 
@@ -47,6 +49,7 @@ fn spawn_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    step_audio: Res<AudioChannel<FootstepAudioChannel>>,
 ) {
     let texture_handle = asset_server.load("mage.png");
     let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(77.0, 50.0), 8, 1);
@@ -61,6 +64,10 @@ fn spawn_player(
             chimera_parts: Vec::new(),
         },
     };
+
+    // spawn audio stopped
+    step_audio.play_looped(asset_server.load("sounds/footstep.ogg"));
+    step_audio.pause();
 
     commands
         .spawn_bundle(SpriteSheetBundle {
@@ -114,6 +121,7 @@ fn animate_player(
 fn move_player(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Player, &mut Velocity, &mut TextureAtlasSprite)>,
+    step_audio: Res<AudioChannel<FootstepAudioChannel>>,
 ) {
     for (player, mut vel, mut sprite) in query.iter_mut() {
         let mut input_direction = Vec2::ZERO;
@@ -134,6 +142,9 @@ fn move_player(
         // if the player didn't move, use friction
         if input_direction == Vec2::ZERO {
             vel.linvel = Vec2::lerp(vel.linvel, Vec2::ZERO, player.friction);
+
+            // stop audio
+            step_audio.pause();
         } else {
             // normalize in order to have a maximum speed of 1 (dir.length == 1)
             let dir_vel = input_direction.normalize() * player.speed;
@@ -141,6 +152,10 @@ fn move_player(
 
             // flip sprite depending on the direction
             sprite.flip_x = dir_vel.x < 0.0;
+
+            // play audio with speed
+            step_audio.resume();
+            step_audio.set_playback_rate(vel.linvel.length() / player.speed * (1.5 - 0.8) + 0.8);
         }
     }
 }
