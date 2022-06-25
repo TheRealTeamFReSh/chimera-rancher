@@ -25,7 +25,7 @@ pub fn spawn_chimera_system(
 
     let capture_input = mouse_input.just_pressed(MouseButton::Left);
 
-    if let Some((mut player, player_transform)) = player_query.iter_mut().next() {
+    if let Some((mut player, _player_transform)) = player_query.iter_mut().next() {
         if capture_input
             && curr_window.cursor_position().unwrap().y > 75.0
             && matches!(player.active_spell, SpellKind::SpawnChimera)

@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    assets_manager::AssetsManager, day_cycle::DayCycleResource, player::Player, states::GameStates,
+    assets_manager::AssetsManager, day_cycle::DayCycleResource, player::Player, spells::SpellKind,
+    states::GameStates,
 };
 
 pub struct HudPlugin;
@@ -21,11 +22,21 @@ pub struct DaysElapsedHud;
 
 fn setup_ui(mut commands: Commands, assets: Res<AssetsManager>) {
     let root = NodeBundle {
+        // transform: Transform::from_xyz(0., 0., 101.),
         style: Style {
-            size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+            position_type: PositionType::Absolute,
+            position: Rect {
+                top: Val::Px(0.),
+                left: Val::Px(0.),
+                right: Val::Auto,
+                bottom: Val::Auto,
+            },
+            size: Size::new(Val::Px(400.), Val::Px(100.)),
             align_items: AlignItems::FlexStart,
-            justify_content: JustifyContent::FlexStart,
+            justify_content: JustifyContent::SpaceBetween,
             flex_direction: FlexDirection::ColumnReverse,
+            // flex_grow: 0.,
+            // flex_shrink: 0.,
             padding: Rect::all(Val::Px(20.)),
             ..default()
         },
@@ -50,6 +61,7 @@ fn setup_ui(mut commands: Commands, assets: Res<AssetsManager>) {
     };
 
     let days_elapsed = TextBundle {
+        style: Style { ..default() },
         text: Text::with_section(
             "Days survived: 0",
             TextStyle {
@@ -79,7 +91,12 @@ fn update_ui(
 ) {
     for player in q_player.iter() {
         for mut text in q_active_spell.iter_mut() {
-            text.sections[0].value = format!("Active spell: {}", player.speed);
+            let active_spell = match player.active_spell {
+                SpellKind::FireProjectile => "Fire projectile",
+                SpellKind::SpawnChimera => "Spawn chimera",
+            };
+
+            text.sections[0].value = format!("Active spell: {}", active_spell);
         }
     }
 

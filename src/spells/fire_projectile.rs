@@ -1,6 +1,5 @@
 // fire off a projectile on mouse click
 use bevy::prelude::*;
-use bevy_kira_audio::AudioChannel;
 use bevy_rapier2d::prelude::*;
 
 use crate::{camera::MainCamera, player::Player, projectile::Projectile};
@@ -16,7 +15,7 @@ pub fn fire_projectile_system(
     mut commands: Commands,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    if let Some((player_transform, mut player)) = player_q.iter_mut().next() {
+    if let Some((player_transform, player)) = player_q.iter_mut().next() {
         let curr_window = windows.get_primary().unwrap();
         if mouse_button.just_pressed(MouseButton::Left)
             && matches!(player.active_spell, SpellKind::FireProjectile)
