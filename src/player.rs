@@ -1,22 +1,16 @@
 use bevy::prelude::*;
+use bevy_kira_audio::AudioChannel;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
     animals::{AnimalAttributesResource, AnimalComponent},
+    assets_manager::AssetsManager,
     camera::CameraTarget,
     chimeras::{ChimeraPartAttributes, ChimeraPartKind},
+    constants,
+    sound_manager::FootstepAudioChannel,
+    states::GameStates,
 };
-
-pub const HEAD_SPEED_PERCENT: f32 = 0.35;
-pub const TAIL_SPEED_PERCENT: f32 = 0.65;
-pub const HEAD_ACCEL_PERCENT: f32 = 0.35;
-pub const TAIL_ACCEL_PERCENT: f32 = 0.65;
-pub const HEAD_DECEL_PERCENT: f32 = 0.35;
-pub const TAIL_DECEL_PERCENT: f32 = 0.65;
-pub const HEAD_HEALTH_PERCENT: f32 = 0.50;
-pub const TAIL_HEALTH_PERCENT: f32 = 0.50;
-pub const HEAD_ATTACK_PERCENT: f32 = 0.7;
-pub const TAIL_ATTACK_PERCENT: f32 = 0.3;
 
 #[derive(Debug, Component)]
 pub struct Player {
@@ -39,19 +33,26 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_player)
-            .add_system(animate_player)
-            .add_system(move_player)
-            .add_system(capture_animal);
+        // on enter
+        app.add_system_set(SystemSet::on_enter(GameStates::Game).with_system(spawn_player));
+
+        // on update
+        app.add_system_set(
+            SystemSet::on_update(GameStates::Game)
+                .with_system(animate_player)
+                .with_system(move_player)
+                .with_system(capture_animal),
+        );
     }
 }
 
 fn spawn_player(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    assets: Res<AssetsManager>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    step_audio: Res<AudioChannel<FootstepAudioChannel>>,
 ) {
-    let texture_handle = asset_server.load("mage.png");
+    let texture_handle = assets.texture_mage.clone().into();
     let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(77.0, 50.0), 8, 1);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
@@ -64,6 +65,10 @@ fn spawn_player(
             chimera_parts: Vec::new(),
         },
     };
+
+    // spawn audio stopped
+    step_audio.play_looped(assets.sound_footstep.clone());
+    step_audio.pause();
 
     commands
         .spawn_bundle(SpriteSheetBundle {
@@ -117,6 +122,7 @@ fn animate_player(
 fn move_player(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Player, &mut Velocity, &mut TextureAtlasSprite)>,
+    step_audio: Res<AudioChannel<FootstepAudioChannel>>,
 ) {
     for (player, mut vel, mut sprite) in query.iter_mut() {
         let mut input_direction = Vec2::ZERO;
@@ -137,6 +143,9 @@ fn move_player(
         // if the player didn't move, use friction
         if input_direction == Vec2::ZERO {
             vel.linvel = Vec2::lerp(vel.linvel, Vec2::ZERO, player.friction);
+
+            // stop audio
+            step_audio.pause();
         } else {
             // normalize in order to have a maximum speed of 1 (dir.length == 1)
             let dir_vel = input_direction.normalize() * player.speed;
@@ -144,6 +153,10 @@ fn move_player(
 
             // flip sprite depending on the direction
             sprite.flip_x = dir_vel.x < 0.0;
+
+            // play audio with speed
+            step_audio.resume();
+            step_audio.set_playback_rate(vel.linvel.length() / player.speed * (1.5 - 0.8) + 0.8);
         }
     }
 }
@@ -160,6 +173,11 @@ fn capture_animal(
 
     if capture_input {
         for (player_transform, mut player) in player_query.iter_mut() {
+            // prevent the player from capturing more than 10 parts
+            if player.inventory.chimera_parts.len() >= 10 {
+                continue;
+            }
+
             let player_pos = player_transform.translation;
 
             for (animal_transform, animal, animal_entity) in animal_query.iter() {
@@ -171,21 +189,25 @@ fn capture_animal(
                     let animal_stats = animal.stats;
                     let animal_attr = &animal_attr_res[&animal_stats.kind];
                     let chimera_attr_head = ChimeraPartAttributes {
-                        attack: animal_stats.health * HEAD_ATTACK_PERCENT,
-                        health: animal_stats.health * HEAD_HEALTH_PERCENT,
-                        speed: animal_stats.speed * HEAD_SPEED_PERCENT,
-                        accel: animal_stats.accel * HEAD_ACCEL_PERCENT,
-                        decel: animal_stats.decel * HEAD_DECEL_PERCENT,
+                        attack: animal_stats.attack * constants::HEAD_ATTACK_PERCENT,
+                        range: animal_stats.range * constants::HEAD_RANGE_PERCENT,
+                        health: animal_stats.health * constants::HEAD_HEALTH_PERCENT,
+                        regen: animal_stats.regen * constants::HEAD_REGEN_PERECENT,
+                        speed: animal_stats.speed * constants::HEAD_SPEED_PERCENT,
+                        accel: animal_stats.accel * constants::HEAD_ACCEL_PERCENT,
+                        decel: animal_stats.decel * constants::HEAD_DECEL_PERCENT,
                         collider_size: animal_attr.collider_size,
                         texture: animal_attr.head_texture.clone(),
                         kind: ChimeraPartKind::Head(animal_stats.kind),
                     };
                     let chimera_attr_tail = ChimeraPartAttributes {
-                        attack: animal_stats.health * TAIL_ATTACK_PERCENT,
-                        health: animal_stats.health * TAIL_HEALTH_PERCENT,
-                        speed: animal_stats.speed * TAIL_SPEED_PERCENT,
-                        accel: animal_stats.accel * TAIL_ACCEL_PERCENT,
-                        decel: animal_stats.decel * TAIL_DECEL_PERCENT,
+                        attack: animal_stats.attack * constants::TAIL_ATTACK_PERCENT,
+                        range: animal_stats.range * constants::TAIL_RANGE_PERCENT,
+                        health: animal_stats.health * constants::TAIL_HEALTH_PERCENT,
+                        regen: animal_stats.regen * constants::TAIL_REGEN_PERECENT,
+                        speed: animal_stats.speed * constants::TAIL_SPEED_PERCENT,
+                        accel: animal_stats.accel * constants::TAIL_ACCEL_PERCENT,
+                        decel: animal_stats.decel * constants::TAIL_DECEL_PERCENT,
                         collider_size: animal_attr.collider_size,
                         texture: animal_attr.tail_texture.clone(),
                         kind: ChimeraPartKind::Tail(animal_stats.kind),

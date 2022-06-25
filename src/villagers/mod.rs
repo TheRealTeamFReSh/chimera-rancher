@@ -3,18 +3,34 @@ use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
 mod behavior;
+mod spawn;
 
 use crate::animations::BobbingAnim;
-use crate::behaviors::UnitBehavior;
+use crate::behaviors::{self, UnitBehavior};
+use crate::constants::{self, VILLAGER_STATS_DEVIATION as STATS_DEVIATION};
 use crate::health::Health;
-const STATS_DEVIATION: f32 = 0.2;
+use crate::states::GameStates;
 
 pub struct VillagersPlugin;
 
 impl Plugin for VillagersPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_test_villager_system)
-            .add_system(behavior::villager_behavior_system);
+        app.insert_resource(spawn::VillagerSpawner {
+            spawn_timer: Timer::from_seconds(constants::VILLAGER_BASE_SPAWN_DURATION, false),
+        });
+
+        // on enter
+        app.add_system_set(
+            SystemSet::on_enter(GameStates::Game).with_system(spawn_test_villager_system),
+        );
+
+        // on update
+        app.add_system_set(
+            SystemSet::on_update(GameStates::Game)
+                .with_system(behavior::villager_behavior_system)
+                .with_system(behaviors::villager_attack_system)
+                .with_system(spawn::spawn_villagers_system),
+        );
     }
 }
 
@@ -25,23 +41,40 @@ pub struct VillagerStats {
     pub speed: f32,
     pub accel: f32,
     pub decel: f32,
-    pub damage: f32,
+    pub range: f32,
 }
 
 #[derive(Component)]
 pub struct VillagerComponent {
     pub behavior: UnitBehavior,
     pub stats: VillagerStats,
+    pub attack_timer: Timer,
+    pub damage_timer: Timer,
 }
 
 #[derive(Component)]
 pub struct VillagerSprite;
 
 fn spawn_test_villager_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+    /*
     spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
-    spawn_villager(Vec2::new(30.0, 500.0), &mut commands, &asset_server);
-    spawn_villager(Vec2::new(20.0, 400.0), &mut commands, &asset_server);
-    spawn_villager(Vec2::new(-50.0, 350.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    spawn_villager(Vec2::new(0.0, 500.0), &mut commands, &asset_server);
+    */
 }
 
 pub fn spawn_villager(position: Vec2, commands: &mut Commands, asset_server: &AssetServer) {
@@ -55,23 +88,30 @@ pub fn spawn_villager(position: Vec2, commands: &mut Commands, asset_server: &As
         .insert(Velocity::default())
         .insert(VillagerComponent {
             behavior: UnitBehavior::Pursue { target: None },
+            damage_timer: Timer::from_seconds(constants::DAMAGE_RED_DURATION, true),
+            attack_timer: Timer::from_seconds(constants::VILLAGER_ATTACK_RATE, true),
             stats: VillagerStats {
                 health: villager_health,
                 attack: rand::thread_rng()
-                    .gen_range(10.0 * (1.0 - STATS_DEVIATION)..100.0 * (1.0 + STATS_DEVIATION)),
+                    .gen_range(10.0 * (1.0 - STATS_DEVIATION)..10.0 * (1.0 + STATS_DEVIATION)),
                 speed: rand::thread_rng()
                     .gen_range(100.0 * (1.0 - STATS_DEVIATION)..100.0 * (1.0 + STATS_DEVIATION)),
                 accel: rand::thread_rng()
                     .gen_range(2.0 * (1.0 - STATS_DEVIATION)..2.0 * (1.0 + STATS_DEVIATION)),
                 decel: rand::thread_rng()
                     .gen_range(6.0 * (1.0 - STATS_DEVIATION)..6.0 * (1.0 + STATS_DEVIATION)),
-                damage: 5.0,
+                range: 100.0,
             },
         })
-        .insert(Health::new(villager_health))
+        .insert(Health::new(
+            villager_health,
+            1.0,
+            constants::VILLAGER_REGEN_RATE,
+        ))
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(10.0, 15.0))
         .insert(LockedAxes::ROTATION_LOCKED)
+        .insert(ActiveEvents::COLLISION_EVENTS)
         .with_children(|parent| {
             parent
                 .spawn_bundle(SpriteBundle {

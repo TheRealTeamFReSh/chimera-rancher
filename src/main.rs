@@ -2,22 +2,39 @@ use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::TweeningPlugin;
+use states::GameStates;
 
 mod animals;
 mod animations;
+mod assets_manager;
 mod behaviors;
 mod camera;
 mod chimeras;
+mod constants;
+mod day_cycle;
 mod health;
 mod helpers;
+mod inventory_parts;
+mod main_menu;
+mod pause_menu;
 mod player;
+mod sound_manager;
+mod states;
 mod stats_window;
 mod villagers;
 
 fn main() {
     App::new()
+        .insert_resource(WindowDescriptor {
+            resizable: false,
+            height: 720.,
+            width: 1280.,
+            title: "Chimera Rancher - Rusty Jam #2".to_string(),
+            ..Default::default()
+        })
         .add_plugins(DefaultPlugins)
         .add_plugin(TilemapPlugin)
+        .add_plugin(assets_manager::AssetsManagerPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(animals::AnimalsPlugin)
@@ -27,13 +44,28 @@ fn main() {
         .add_plugin(camera::CameraPlugin)
         .add_plugin(animations::AnimationsPlugin)
         .add_plugin(stats_window::StatsWindowPlugin)
+        .add_plugin(inventory_parts::InventoryUIPlugin)
+        .add_plugin(main_menu::MainMenuPlugin)
+        .add_plugin(pause_menu::PauseMenuPlugin)
+        .add_plugin(day_cycle::DayCyclePlugin)
+        .add_plugin(health::HealthPlugin)
+        .add_plugin(sound_manager::SoundChannelsPlugin)
         .add_plugin(TweeningPlugin)
-        .add_startup_system(setup_tiles)
-        .add_startup_system(setup_physics)
-        .add_startup_system(setup_boundaries)
-        .add_startup_system(setup_areas)
-        .add_startup_system(setup_env_obj)
-        .add_system(helpers::texture::set_texture_filters_to_nearest)
+        .add_state(GameStates::AssetsLoading)
+        .add_system_set(
+            SystemSet::on_enter(GameStates::Game)
+                .after("setup_attributes")
+                .with_system(constants::compute_max_stats)
+                .with_system(setup_physics)
+                .with_system(setup_boundaries)
+                .with_system(setup_areas)
+                .with_system(setup_tiles)
+                .with_system(setup_env_obj),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameStates::Game)
+                .with_system(helpers::texture::set_texture_filters_to_nearest),
+        )
         .run();
 }
 

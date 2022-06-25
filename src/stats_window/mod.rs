@@ -1,9 +1,13 @@
 use bevy::{log, prelude::*};
 use bevy_rapier2d::{plugin::RapierContext, prelude::InteractionGroups};
 
-use crate::{camera::MainCamera, chimeras::ChimeraComponent};
+use crate::{
+    animals::AnimalComponent, assets_manager::AssetsManager, camera::MainCamera,
+    chimeras::ChimeraComponent, states::GameStates,
+};
 
 mod ui;
+mod ui_bars;
 
 pub struct StatsWindowPlugin;
 
@@ -11,21 +15,37 @@ impl Plugin for StatsWindowPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(StatsWindow {
             target: None,
+            target_type: EntityType::None,
             cursor: None,
             target_setup: false,
             opened: false,
-        })
-        .add_startup_system(ui::setup_ui)
-        .add_system(ui::update_window_stats)
-        .add_system(ui::display_stats_window)
-        .add_system(entity_click_detection)
-        .add_system(setup_stats_target);
+        });
+
+        // on enter
+        app.add_system_set(SystemSet::on_enter(GameStates::Game).with_system(ui::setup_ui));
+
+        // on update
+        app.add_system_set(
+            SystemSet::on_update(GameStates::Game)
+                .with_system(ui::update_window_stats)
+                .with_system(ui::display_stats_window)
+                .with_system(entity_click_detection)
+                .with_system(setup_stats_target),
+        );
     }
+}
+
+#[derive(PartialEq)]
+pub enum EntityType {
+    None,
+    Animal,
+    Chimera,
 }
 
 #[derive(Component)]
 pub struct StatsWindow {
     pub target: Option<Entity>,
+    pub target_type: EntityType,
     pub cursor: Option<Entity>,
     pub target_setup: bool,
     pub opened: bool,
@@ -38,7 +58,7 @@ fn setup_stats_target(
     mut commands: Commands,
     mut stats_window: ResMut<StatsWindow>,
     // q_transform: Query<&Transform, With<ChimeraComponent>>,
-    asset_server: Res<AssetServer>,
+    assets: Res<AssetsManager>,
 ) {
     if stats_window.target_setup {
         return;
@@ -51,7 +71,7 @@ fn setup_stats_target(
         commands.entity(target_entity).with_children(|parent| {
             let child_id = parent
                 .spawn_bundle(SpriteBundle {
-                    texture: asset_server.load("target.png"),
+                    texture: assets.texture_target.clone(),
                     ..default()
                 })
                 .insert(StatsWindowTarget)
@@ -69,6 +89,7 @@ fn entity_click_detection(
     windows: Res<Windows>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     q_chimera: Query<&ChimeraComponent>,
+    q_animal: Query<&AnimalComponent>,
     mouse_button: Res<Input<MouseButton>>,
     mut stats_window: ResMut<StatsWindow>,
     mut commands: Commands,
@@ -79,6 +100,7 @@ fn entity_click_detection(
             commands.entity(target_entity).despawn();
             stats_window.target = None;
             stats_window.cursor = None;
+            stats_window.target_type = EntityType::None;
         }
 
         // get the camera
@@ -117,18 +139,40 @@ fn entity_click_detection(
             InteractionGroups::all(),
             None,
             |entity| {
-                // get the chimera component
+                // if we clicked on a chimera, get the chimera component
                 if let Ok(chi_compo) = q_chimera.get(entity) {
                     let stats = chi_compo.stats;
-                    log::info!(
-                        "The entity {:?} contains the point with stats: {:?}",
+                    log::debug!(
+                        "The chimera {:?} contains the point with stats: {:?}",
                         entity,
                         stats
                     );
 
                     stats_window.target = Some(entity);
                     stats_window.target_setup = false;
+                    stats_window.target_type = EntityType::Chimera;
+
+                    // stop searching
+                    return false;
                 }
+
+                // if we clicked on an animal, get the animal component
+                if let Ok(ani_compo) = q_animal.get(entity) {
+                    let stats = ani_compo.stats;
+                    log::debug!(
+                        "The animal {:?} contains the point with stats: {:?}",
+                        entity,
+                        stats
+                    );
+
+                    stats_window.target = Some(entity);
+                    stats_window.target_setup = false;
+                    stats_window.target_type = EntityType::Animal;
+
+                    // stop searching
+                    return false;
+                }
+
                 // Return `false` instead if we want to stop searching for other colliders containing this point.
                 true
             },

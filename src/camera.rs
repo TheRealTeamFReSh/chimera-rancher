@@ -1,11 +1,18 @@
 use bevy::{prelude::*, render::camera::RenderTarget};
 
+use crate::states::GameStates;
+
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_camera)
-            .add_system(camera_movement_system);
+        // cameras should always be there
+        app.add_startup_system(setup_camera);
+
+        // on update
+        app.add_system_set(
+            SystemSet::on_update(GameStates::Game).with_system(camera_movement_system),
+        );
     }
 }
 
