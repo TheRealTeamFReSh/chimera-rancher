@@ -41,7 +41,6 @@ pub fn spawn_animals_system(
                 Vec2::new(rand_x_pos, rand_y_pos),
                 &animal_attr_res,
                 &mut commands,
-                &asset_server,
             );
 
             let new_spawn_duration = ANIMAL_BASE_SPAWN_DURATION

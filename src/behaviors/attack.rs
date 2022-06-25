@@ -3,6 +3,7 @@ use bevy_kira_audio::AudioChannel;
 use rand::Rng;
 
 use crate::{
+    assets_manager::AssetsManager,
     chimeras::{ChimeraComponent, ChimeraSprite},
     health::Health,
     sound_manager::ChimeraHitAudioChannel,
@@ -10,7 +11,7 @@ use crate::{
 };
 
 pub fn villager_attack_system(
-    asset_server: Res<AssetServer>,
+    assets: Res<AssetsManager>,
     mut villager_query: Query<(&mut VillagerComponent, &Transform)>,
     mut chimera_query: Query<(&mut Health, &Transform, &Children, &mut ChimeraComponent)>,
     mut chimera_sprite_query: Query<&mut Sprite, With<ChimeraSprite>>,
@@ -37,7 +38,7 @@ pub fn villager_attack_system(
                 if villager_pos.distance(chimera_pos) < villager.stats.range {
                     // play sound
                     hit_audio.set_playback_rate(rand::thread_rng().gen_range(0.3..1.8));
-                    hit_audio.play(asset_server.load("sounds/hit.ogg"));
+                    hit_audio.play(assets.sound_hit.clone());
 
                     chimera_health.health -= villager.stats.attack;
                     for &child in children.iter() {

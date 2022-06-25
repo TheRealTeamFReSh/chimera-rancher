@@ -4,6 +4,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{
     animals::{AnimalAttributesResource, AnimalComponent},
+    assets_manager::AssetsManager,
     camera::CameraTarget,
     chimeras::{ChimeraPartAttributes, ChimeraPartKind},
     constants,
@@ -47,11 +48,11 @@ impl Plugin for PlayerPlugin {
 
 fn spawn_player(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    assets: Res<AssetsManager>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     step_audio: Res<AudioChannel<FootstepAudioChannel>>,
 ) {
-    let texture_handle = asset_server.load("mage.png");
+    let texture_handle = assets.texture_mage.clone().into();
     let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(77.0, 50.0), 8, 1);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
@@ -66,7 +67,7 @@ fn spawn_player(
     };
 
     // spawn audio stopped
-    step_audio.play_looped(asset_server.load("sounds/footstep.ogg"));
+    step_audio.play_looped(assets.sound_footstep.clone());
     step_audio.pause();
 
     commands

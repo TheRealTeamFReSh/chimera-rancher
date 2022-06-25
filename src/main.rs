@@ -5,6 +5,7 @@ use states::GameStates;
 
 mod animals;
 mod animations;
+mod assets_manager;
 mod behaviors;
 mod camera;
 mod chimeras;
@@ -30,6 +31,7 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
+        .add_plugin(assets_manager::AssetsManagerPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(animals::AnimalsPlugin)
@@ -46,14 +48,15 @@ fn main() {
         .add_plugin(health::HealthPlugin)
         .add_plugin(sound_manager::SoundChannelsPlugin)
         .add_plugin(TweeningPlugin)
-        .add_state(GameStates::MainMenu)
+        .add_state(GameStates::AssetsLoading)
         .add_system_set(
             SystemSet::on_enter(GameStates::Game)
+                .after("setup_attributes")
+                .with_system(constants::compute_max_stats)
                 .with_system(setup_physics)
                 .with_system(setup_boundaries)
                 .with_system(setup_areas),
         )
-        .add_startup_system(constants::compute_max_stats)
         .run();
 }
 
