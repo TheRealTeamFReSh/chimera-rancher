@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::states::GameStates;
+use crate::{player::Player, states::GameStates};
 
 pub struct HealthPlugin;
 
@@ -33,11 +33,19 @@ impl Health {
 pub fn health_system(
     mut commands: Commands,
     mut health_query: Query<(Entity, &mut Health)>,
+    player_query: Query<Entity, With<Player>>,
+    mut game_state: ResMut<State<GameStates>>,
     time: Res<Time>,
 ) {
+    let player_entity = player_query.iter().next().unwrap();
+
     for (entity, mut health) in health_query.iter_mut() {
         if health.health <= 0.0 {
-            commands.entity(entity).despawn_recursive();
+            if entity == player_entity {
+                game_state.push(GameStates::GameOver);
+            } else {
+                commands.entity(entity).despawn_recursive();
+            }
             break;
         }
 

@@ -8,6 +8,7 @@ use crate::{
     camera::CameraTarget,
     chimeras::{ChimeraPartAttributes, ChimeraPartKind},
     constants,
+    health::Health,
     sound_manager::FootstepAudioChannel,
     spells::SpellKind,
     states::GameStates,
@@ -23,6 +24,7 @@ pub struct Player {
     pub active_spell: SpellKind,
     pub fire_projetile_cooldown: Timer,
     pub can_fire_projetile: bool,
+    pub damage_timer: Timer,
 }
 
 #[derive(Debug)]
@@ -62,7 +64,7 @@ fn spawn_player(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let player = Player {
-        speed: 300.,
+        speed: 150.,
         acceleration: 0.1,
         friction: 0.2,
         capture_distance: 200.0,
@@ -72,6 +74,7 @@ fn spawn_player(
         active_spell: SpellKind::SpawnChimera,
         fire_projetile_cooldown: Timer::from_seconds(0.5, true),
         can_fire_projetile: true,
+        damage_timer: Timer::from_seconds(constants::DAMAGE_RED_DURATION, true),
     };
 
     // spawn audio stopped
@@ -97,7 +100,8 @@ fn spawn_player(
         .insert(LockedAxes::ROTATION_LOCKED)
         .insert(player)
         .insert(AnimationTimer(Timer::from_seconds(0.1, true)))
-        .insert(CameraTarget);
+        .insert(CameraTarget)
+        .insert(Health::new(100.0, 1.0, 2.0));
 }
 
 fn animate_player(
@@ -131,8 +135,15 @@ fn move_player(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Player, &mut Velocity, &mut TextureAtlasSprite)>,
     step_audio: Res<AudioChannel<FootstepAudioChannel>>,
+    time: Res<Time>,
 ) {
-    for (player, mut vel, mut sprite) in query.iter_mut() {
+    for (mut player, mut vel, mut sprite) in query.iter_mut() {
+        if sprite.color.r() > 1.0 {
+            player.damage_timer.tick(time.delta());
+            if player.damage_timer.just_finished() {
+                sprite.color.set_r(1.0);
+            }
+        }
         let mut input_direction = Vec2::ZERO;
 
         if keyboard_input.pressed(KeyCode::A) || keyboard_input.pressed(KeyCode::Left) {
