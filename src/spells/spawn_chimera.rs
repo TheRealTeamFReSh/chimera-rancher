@@ -8,6 +8,8 @@ use crate::{
     sound_manager::SpawnChimeraAudioChannel,
 };
 
+use super::SpellKind;
+
 pub fn spawn_chimera_system(
     windows: Res<Windows>,
     camera_query: Query<(&Transform, &Camera), With<MainCamera>>,
@@ -23,33 +25,37 @@ pub fn spawn_chimera_system(
 
     let capture_input = mouse_input.just_pressed(MouseButton::Left);
 
-    if capture_input && curr_window.cursor_position().unwrap().y > 75.0 {
-        let cursor_pos = if let Some(screen_pos) = curr_window.cursor_position() {
-            // get the size of the window
-            let window_size = Vec2::new(curr_window.width() as f32, curr_window.height() as f32);
+    if let Some((mut player, player_transform)) = player_query.iter_mut().next() {
+        if capture_input
+            && curr_window.cursor_position().unwrap().y > 75.0
+            && matches!(player.active_spell, SpellKind::SpawnChimera)
+        {
+            let cursor_pos = if let Some(screen_pos) = curr_window.cursor_position() {
+                // get the size of the window
+                let window_size =
+                    Vec2::new(curr_window.width() as f32, curr_window.height() as f32);
 
-            // convert screen position [0..resolution] to ndc [-1..1] (gpu coordinates)
-            let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
+                // convert screen position [0..resolution] to ndc [-1..1] (gpu coordinates)
+                let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
 
-            // matrix for undoing the projection and camera transform
-            let ndc_to_world =
-                camera_gl_transform.compute_matrix() * camera.projection_matrix.inverse();
+                // matrix for undoing the projection and camera transform
+                let ndc_to_world =
+                    camera_gl_transform.compute_matrix() * camera.projection_matrix.inverse();
 
-            // use it to convert ndc to world-space coordinates
-            let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
+                // use it to convert ndc to world-space coordinates
+                let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
 
-            // reduce it to a 2D value
-            let world_pos: Vec2 = world_pos.truncate();
+                // reduce it to a 2D value
+                let world_pos: Vec2 = world_pos.truncate();
 
-            // use this value
-            world_pos
-        } else {
-            Vec2::ZERO
-        };
-        // if there are 2 items selected
-        if let Some((_, part1)) = inv_man.target_1.selection.clone() {
-            if let Some((_, part2)) = inv_man.target_2.selection.clone() {
-                if let Some((mut player, player_transform)) = player_query.iter_mut().next() {
+                // use this value
+                world_pos
+            } else {
+                Vec2::ZERO
+            };
+            // if there are 2 items selected
+            if let Some((_, part1)) = inv_man.target_1.selection.clone() {
+                if let Some((_, part2)) = inv_man.target_2.selection.clone() {
                     let part_1_idx = player
                         .inventory
                         .chimera_parts
