@@ -23,6 +23,8 @@ pub struct Player {
     pub capture_distance: f32,
     pub inventory: PlayerInventory,
     pub active_spell: SpellKind,
+    pub fire_projetile_cooldown: Timer,
+    pub can_fire_projetile: bool,
 }
 
 #[derive(Debug)]
@@ -70,6 +72,8 @@ fn spawn_player(
             chimera_parts: Vec::new(),
         },
         active_spell: SpellKind::SpawnChimera,
+        fire_projetile_cooldown: Timer::from_seconds(0.5, true),
+        can_fire_projetile: true,
     };
 
     // spawn audio stopped
