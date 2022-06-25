@@ -17,6 +17,7 @@ mod main_menu;
 mod pause_menu;
 mod player;
 mod sound_manager;
+mod spells;
 mod states;
 mod stats_window;
 mod villagers;
@@ -47,6 +48,7 @@ fn main() {
         .add_plugin(day_cycle::DayCyclePlugin)
         .add_plugin(health::HealthPlugin)
         .add_plugin(sound_manager::SoundChannelsPlugin)
+        .add_plugin(spells::SpellsPlugin)
         .add_plugin(TweeningPlugin)
         .add_state(GameStates::AssetsLoading)
         .add_system_set(
