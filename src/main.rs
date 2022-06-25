@@ -25,8 +25,8 @@ fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
             resizable: false,
-            height: 600.,
-            width: 800.,
+            height: 720.,
+            width: 1280.,
             title: "Chimera Rancher - Rusty Jam #2".to_string(),
             ..Default::default()
         })
