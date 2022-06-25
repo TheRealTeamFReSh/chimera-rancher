@@ -9,10 +9,13 @@ mod behaviors;
 mod camera;
 mod chimeras;
 mod constants;
+mod day_cycle;
 mod health;
 mod inventory_parts;
+mod main_menu;
 mod pause_menu;
 mod player;
+mod sound_manager;
 mod states;
 mod stats_window;
 mod villagers;
@@ -37,10 +40,13 @@ fn main() {
         .add_plugin(animations::AnimationsPlugin)
         .add_plugin(stats_window::StatsWindowPlugin)
         .add_plugin(inventory_parts::InventoryUIPlugin)
+        .add_plugin(main_menu::MainMenuPlugin)
         .add_plugin(pause_menu::PauseMenuPlugin)
+        .add_plugin(day_cycle::DayCyclePlugin)
         .add_plugin(health::HealthPlugin)
+        .add_plugin(sound_manager::SoundChannelsPlugin)
         .add_plugin(TweeningPlugin)
-        .add_state(GameStates::Game)
+        .add_state(GameStates::MainMenu)
         .add_system_set(
             SystemSet::on_enter(GameStates::Game)
                 .with_system(setup_physics)

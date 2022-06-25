@@ -26,7 +26,6 @@ impl Plugin for StatsWindowPlugin {
         // on update
         app.add_system_set(
             SystemSet::on_update(GameStates::Game)
-                .after("camera_setup")
                 .with_system(ui::update_window_stats)
                 .with_system(ui::display_stats_window)
                 .with_system(entity_click_detection)

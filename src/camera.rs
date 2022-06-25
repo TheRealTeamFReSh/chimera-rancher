@@ -6,12 +6,8 @@ pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        // on enter
-        app.add_system_set(
-            SystemSet::on_enter(GameStates::Game)
-                .with_system(setup_camera)
-                .label("camera_setup"),
-        );
+        // cameras should always be there
+        app.add_startup_system(setup_camera);
 
         // on update
         app.add_system_set(
