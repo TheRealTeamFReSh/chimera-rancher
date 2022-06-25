@@ -106,9 +106,6 @@ pub fn update_window_stats(
                 BarStatType::Health => (maxi_stats.health, health.max_health, health.health),
                 BarStatType::Regen => (maxi_stats.regen, regen, regen),
                 BarStatType::Range => (maxi_stats.range, range, range),
-
-                // @cdsupina: set this to (player.max_health, player.max_health, player.health)
-                BarStatType::PlayerHealth => (player.speed, player.speed, player.speed),
             };
 
             // getting max_value

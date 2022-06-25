@@ -3,10 +3,11 @@ use bevy::prelude::*;
 use crate::{
     assets_manager::AssetsManager,
     day_cycle::DayCycleResource,
+    health::Health,
     player::Player,
     spells::SpellKind,
     states::GameStates,
-    stats_window::ui_bars::{BarStatType, MaxBarComponent, UIBar, ValueBarComponent},
+    stats_window::ui_bars::{BarStatType, UIBar},
 };
 
 pub struct HudPlugin;
@@ -100,7 +101,7 @@ fn setup_ui(mut commands: Commands, assets: Res<AssetsManager>) {
         parent.spawn_bundle(days_elapsed).insert(DaysElapsedHud);
         parent.spawn_bundle(active_spell).insert(ActiveSpellHud);
         parent.spawn_bundle(health);
-        create_player_ui_bar(parent, UIBar::from_type(BarStatType::PlayerHealth));
+        create_player_ui_bar(parent, UIBar::from_type(BarStatType::Health));
     });
 }
 
@@ -108,7 +109,23 @@ fn update_ui(
     mut q_active_spell: Query<&mut Text, (With<ActiveSpellHud>, Without<DaysElapsedHud>)>,
     mut q_days_elapsed: Query<&mut Text, (With<DaysElapsedHud>, Without<ActiveSpellHud>)>,
     day_cycle: Res<DayCycleResource>,
+    q_ui_bar: Query<
+        (&Children, &UIBar),
+        (
+            Without<PlayerHealthMaxBarComponent>,
+            Without<PlayerHealthValueBarComponent>,
+        ),
+    >,
+    mut q_ui_bar_max: Query<
+        (&Children, &mut Style),
+        (
+            With<PlayerHealthMaxBarComponent>,
+            Without<PlayerHealthValueBarComponent>,
+        ),
+    >,
+    mut q_ui_bar_value: Query<&mut Style, With<PlayerHealthValueBarComponent>>,
     q_player: Query<&Player>,
+    q_player_health: Query<&Health, With<Player>>,
 ) {
     for player in q_player.iter() {
         for mut text in q_active_spell.iter_mut() {
@@ -124,7 +141,43 @@ fn update_ui(
     for mut text in q_days_elapsed.iter_mut() {
         text.sections[0].value = format!("Days survived: {}", day_cycle.days_passed);
     }
+
+    for player_health in q_player_health.iter() {
+        for (children, _bar) in q_ui_bar.iter() {
+            // set value according to bartype
+            let (max_value_possible, max_value, value) = (
+                player_health.max_health,
+                player_health.max_health,
+                player_health.health,
+            );
+
+            // getting max_value
+            for child in children.iter() {
+                if let Ok((children2, mut style)) = q_ui_bar_max.get_mut(*child) {
+                    style.size = Size::new(
+                        Val::Percent(100. * max_value / max_value_possible),
+                        Val::Percent(100.),
+                    );
+
+                    // getting value
+                    for child2 in children2.iter() {
+                        if let Ok(mut style) = q_ui_bar_value.get_mut(*child2) {
+                            style.size = Size::new(
+                                Val::Percent(100. * value / max_value),
+                                Val::Percent(100.),
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
+#[derive(Component)]
+pub struct PlayerHealthValueBarComponent;
+
+#[derive(Component)]
+pub struct PlayerHealthMaxBarComponent;
 
 pub fn create_player_ui_bar(parent: &mut ChildBuilder, bar: UIBar) {
     let full_bar = NodeBundle {
@@ -166,9 +219,11 @@ pub fn create_player_ui_bar(parent: &mut ChildBuilder, bar: UIBar) {
             parent
                 .spawn_bundle(max_health_bar)
                 .with_children(|parent| {
-                    parent.spawn_bundle(health_bar).insert(ValueBarComponent);
+                    parent
+                        .spawn_bundle(health_bar)
+                        .insert(PlayerHealthValueBarComponent);
                 })
-                .insert(MaxBarComponent);
+                .insert(PlayerHealthMaxBarComponent);
         })
         .insert(bar);
 }
