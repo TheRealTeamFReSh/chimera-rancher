@@ -1,10 +1,9 @@
 use bevy::{prelude::*, render::render_resource::TextureUsages};
 
-pub fn set_texture_filters_to_nearest (
+pub fn set_texture_filters_to_nearest(
     mut texture_events: EventReader<AssetEvent<Image>>,
     mut textures: ResMut<Assets<Image>>,
-    ){
-
+) {
     for event in texture_events.iter() {
         match event {
             AssetEvent::Created { handle } => {

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
+use bevy_ecs_tilemap::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::TweeningPlugin;
-use bevy_ecs_tilemap::prelude::*;
 
 mod animals;
 mod animations;
@@ -9,10 +9,10 @@ mod behaviors;
 mod camera;
 mod chimeras;
 mod health;
+mod helpers;
 mod player;
 mod stats_window;
 mod villagers;
-mod helpers;
 
 fn main() {
     App::new()
@@ -32,8 +32,35 @@ fn main() {
         .add_startup_system(setup_physics)
         .add_startup_system(setup_boundaries)
         .add_startup_system(setup_areas)
+        .add_startup_system(setup_env_obj)
         .add_system(helpers::texture::set_texture_filters_to_nearest)
         .run();
+}
+
+fn setup_env_obj(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
+    let texture_handle = asset_server.load("GRASS+.png");
+    let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(16.0, 16.0), 25, 14);
+    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+    commands
+        .spawn_bundle(SpriteSheetBundle {
+            sprite: TextureAtlasSprite {
+                index: 286,
+                custom_size: Some(Vec2::new(32.0, 32.0)),
+                ..Default::default()
+            },
+            texture_atlas: texture_atlas_handle,
+            transform: Transform {
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)))
+        .insert(Collider::cuboid(16.0, 16.0));
 }
 
 fn setup_tiles(mut commands: Commands, asset_server: Res<AssetServer>, mut map_query: MapQuery) {
@@ -44,17 +71,17 @@ fn setup_tiles(mut commands: Commands, asset_server: Res<AssetServer>, mut map_q
 
     //Create new layer builder with a layer entity
     let (mut layer_builder, _) = LayerBuilder::new(
-            &mut commands,
-            LayerSettings::new(
-                    MapSize(16, 16),
-                    ChunkSize(8,8),
-                    TileSize(32.0, 32.0),
-                    //still don't know what this does
-                    TextureSize(32.0, 32.0),
-                ),
-                0_u16,
-                0_u16,
-        );
+        &mut commands,
+        LayerSettings::new(
+            MapSize(16, 16),
+            ChunkSize(8, 8),
+            TileSize(32.0, 32.0),
+            //still don't know what this does
+            TextureSize(32.0, 32.0),
+        ),
+        0_u16,
+        0_u16,
+    );
 
     layer_builder.set_all(TileBundle::default());
 
@@ -65,14 +92,12 @@ fn setup_tiles(mut commands: Commands, asset_server: Res<AssetServer>, mut map_q
     map.add_layer(&mut commands, 0_u16, layer_entity);
 
     //Spawn map
-    commands.entity(map_entity)
+    commands
+        .entity(map_entity)
         .insert(map)
         .insert(Transform::from_xyz(-2048.0, -2048.0, 0.0))
         .insert(GlobalTransform::default());
-
-
 }
-
 
 fn setup_physics(mut rapier_config: ResMut<RapierConfiguration>) {
     rapier_config.gravity = [0.0, 0.0].into();
