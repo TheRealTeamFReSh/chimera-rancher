@@ -111,7 +111,6 @@ pub fn spawn_villager(position: Vec2, commands: &mut Commands, asset_server: &As
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(10.0, 15.0))
         .insert(LockedAxes::ROTATION_LOCKED)
-        .insert(ActiveEvents::COLLISION_EVENTS)
         .with_children(|parent| {
             parent
                 .spawn_bundle(SpriteBundle {
